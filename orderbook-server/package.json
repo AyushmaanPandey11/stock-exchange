@@ -1,0 +1,24 @@
+{
+  "name": "orderbook-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.3",
+    "@types/redis": "^4.0.11",
+    "@types/uuid": "^10.0.0",
+    "express": "^5.1.0",
+    "redis": "^5.0.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3",
+    "uuid": "^11.1.0",
+    "zod": "^3.24.3"
+  }
+}
