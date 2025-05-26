@@ -9,8 +9,6 @@ const QUOTE_ASSET = "USD";
 const app = express();
 app.use(express.json());
 
-let GLOBAL_TRADE_ID = 0;
-
 app.post("/api/v1/order", (req: any, res: any) => {
   const order = OrderInputSchema.safeParse(req.body);
   if (!order.success) {
@@ -29,7 +27,7 @@ app.post("/api/v1/order", (req: any, res: any) => {
 
   const orderId = getOrderId();
 
-  const { executedQuantity, fills } = fillOrder(
+  const { executedQty, fills } = fillOrder(
     orderId,
     price,
     quantity,
@@ -37,7 +35,7 @@ app.post("/api/v1/order", (req: any, res: any) => {
     kind
   );
   return res.status(200).json({
-    executedQuantity,
+    executedQty,
     fills,
     orderId,
   });
