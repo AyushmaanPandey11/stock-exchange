@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
-import { ChartManager } from "../utils/ChartManager";
 import { getKlines } from "../utils/httpClient";
 import { KLine } from "../utils/types";
+import { ChartManager } from "../utils/chartManager";
 
 export function TradeView({ market }: { market: string }) {
   const chartRef = useRef<HTMLDivElement>(null);

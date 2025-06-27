@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { PrimaryButton, SuccessButton } from "../core/Button";
+import { PrimaryButton, SuccessButton } from "../components/core/Button";
 
 export const Appbar = () => {
   const route = usePathname();

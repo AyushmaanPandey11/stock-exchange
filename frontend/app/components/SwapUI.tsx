@@ -127,7 +127,13 @@ export function SwapUI({ market }: { market: string }) {
   );
 }
 
-function LimitButton({ type, setType }: { type: string; setType: any }) {
+function LimitButton({
+  type,
+  setType,
+}: {
+  type: string;
+  setType: React.Dispatch<React.SetStateAction<string>>;
+}) {
   return (
     <div
       className="flex flex-col cursor-pointer justify-center py-2"
@@ -146,7 +152,13 @@ function LimitButton({ type, setType }: { type: string; setType: any }) {
   );
 }
 
-function MarketButton({ type, setType }: { type: string; setType: any }) {
+function MarketButton({
+  type,
+  setType,
+}: {
+  type: string;
+  setType: React.Dispatch<React.SetStateAction<string>>;
+}) {
   return (
     <div
       className="flex flex-col cursor-pointer justify-center py-2"
@@ -170,7 +182,7 @@ function BuyButton({
   setActiveTab,
 }: {
   activeTab: string;
-  setActiveTab: any;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
 }) {
   return (
     <div
@@ -191,7 +203,7 @@ function SellButton({
   setActiveTab,
 }: {
   activeTab: string;
-  setActiveTab: any;
+  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
 }) {
   return (
     <div
