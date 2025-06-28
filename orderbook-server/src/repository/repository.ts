@@ -58,7 +58,6 @@ const fillOrder = (
   kind?: "ioc"
 ): { status: "rejected" | "accepted"; executedQty: number; fills: Fill[] } => {
   const fills: Fill[] = [];
-  const isBuy = side === "buy";
   // checking for total stocks available for the price
   const maxFillQuantity = getFillAmount(price, quantity, side);
   let executedQty = 0;

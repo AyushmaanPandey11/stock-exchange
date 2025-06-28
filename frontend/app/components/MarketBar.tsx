@@ -87,6 +87,8 @@ function Ticker({ market }: { market: string }) {
           data-nimg="1"
           className="z-10 rounded-full h-6 w-6 mt-4 outline-baseBackgroundL1"
           src="/sol.webp"
+          width={24}
+          height={24}
         />
         <Image
           alt="USDC Logo"
@@ -95,6 +97,8 @@ function Ticker({ market }: { market: string }) {
           data-nimg="1"
           className="h-6 w-6 -ml-2 mt-4 rounded-full"
           src="/usdc.webp"
+          width={24}
+          height={24}
         />
       </div>
       <button type="button" className="react-aria-Button" data-rac="">

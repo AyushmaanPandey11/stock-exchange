@@ -3,7 +3,7 @@ import Image from "next/image";
 import { useState } from "react";
 
 export function SwapUI({ market }: { market: string }) {
-  // const [amount, setAmount] = useState('');
+  const [amount, setAmount] = useState("");
   const [activeTab, setActiveTab] = useState("buy");
   const [type, setType] = useState("limit");
 
@@ -44,10 +44,19 @@ export function SwapUI({ market }: { market: string }) {
                     className="h-12 rounded-lg border-2 border-solid border-baseBorderLight bg-[var(--background)] pr-12 text-right text-2xl leading-9 text-[$text] placeholder-baseTextMedEmphasis ring-0 transition focus:border-accentBlue focus:ring-0"
                     type="text"
                     value="134.38"
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                    }}
                   />
                   <div className="flex flex-row absolute right-1 top-1 p-2">
                     <div className="relative">
-                      <Image src="/usdc.webp" alt="image" className="w-6 h-6" />
+                      <Image
+                        src="/usdc.webp"
+                        alt="image"
+                        className="w-6 h-6"
+                        width={24}
+                        height={24}
+                      />
                     </div>
                   </div>
                 </div>
@@ -64,10 +73,19 @@ export function SwapUI({ market }: { market: string }) {
                   className="h-12 rounded-lg border-2 border-solid border-baseBorderLight bg-[var(--background)] pr-12 text-right text-2xl leading-9 text-[$text] placeholder-baseTextMedEmphasis ring-0 transition focus:border-accentBlue focus:ring-0"
                   type="text"
                   value="123"
+                  onChange={(e) => {
+                    setAmount(e.target.value);
+                  }}
                 />
                 <div className="flex flex-row absolute right-1 top-1 p-2">
                   <div className="relative">
-                    <Image src="/sol.webp" alt="sol" className="w-6 h-6" />
+                    <Image
+                      src="/sol.webp"
+                      alt="sol"
+                      className="w-6 h-6"
+                      width={24}
+                      height={24}
+                    />
                   </div>
                 </div>
               </div>
@@ -93,7 +111,7 @@ export function SwapUI({ market }: { market: string }) {
             </div>
             <button
               type="button"
-              className="font-semibold  focus:ring-blue-200 focus:none focus:outline-none text-center h-12 rounded-xl text-base px-4 py-2 my-4 bg-greenPrimaryButtonBackground text-greenPrimaryButtonText active:scale-98"
+              className="font-semibold  focus:ring-blue-200 focus:none focus:outline-none text-center h-12 rounded-xl text-black hover:cursor-pointer text-base px-4 py-2 my-4 bg-green-500 bg-greenPrimaryButtonBackground text-greenPrimaryButtonText active:scale-98"
               data-rac=""
             >
               Buy

@@ -1,6 +1,5 @@
 import express from "express";
 import { OrderInputSchema } from "./types";
-import { orderbook, bookWithQuantity } from "./orderbook";
 import { fillOrder, getOrderId } from "./repository/repository";
 
 const BASE_ASSET = "BTC";
