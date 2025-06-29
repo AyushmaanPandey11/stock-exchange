@@ -13,33 +13,8 @@ export async function getTicker(market: string): Promise<Ticker> {
 }
 
 export async function getTickers(): Promise<Ticker[]> {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  return [
-    {
-      firstPrice: "130.00",
-      high: "140.00",
-      lastPrice: "134.38",
-      low: "128.00",
-      priceChange: "4.38",
-      priceChangePercent: "3.37",
-      quoteVolume: "5000000",
-      symbol: "SOL_USDC",
-      trades: "1500",
-      volume: "37250",
-    },
-    {
-      firstPrice: "2450.00",
-      high: "2600.00",
-      lastPrice: "2500.00",
-      low: "2400.00",
-      priceChange: "50.00",
-      priceChangePercent: "2.04",
-      quoteVolume: "10000000",
-      symbol: "ETH_USDC",
-      trades: "3200",
-      volume: "4000",
-    },
-  ];
+  const response = await axios.get(`${BASE_URL}/tickers`);
+  return response.data;
 }
 
 export async function getDepth(market: string): Promise<Depth> {
