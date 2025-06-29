@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import {
   getDepth,
-  getKlines,
+  // getKlines,
   getTicker,
-  getTrades,
+  // getTrades,
 } from "../../utils/httpClient";
 import { BidTable } from "./BidTable";
 import { AskTable } from "./AskTable";
@@ -22,10 +22,10 @@ export function Depth({ market }: { market: string }) {
     });
 
     getTicker(market).then((t) => setPrice(t.lastPrice));
-    getTrades(market).then((t) => setPrice(t[0].price));
-    getKlines(market, "1h", 1640099200, 1640100800).then((t) =>
-      setPrice(t[0].close)
-    );
+    // getTrades(market).then((t) => setPrice(t[0].price));
+    // getKlines(market, "1h", 1640099200, 1640100800).then((t) =>
+    //   setPrice(t[0].close)
+    // );
   }, [market]);
 
   return (

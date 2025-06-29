@@ -8,7 +8,7 @@ export const MarketBar = ({ market }: { market: string }) => {
   const [ticker, setTicker] = useState<Ticker | null>(null);
 
   useEffect(() => {
-    getTicker(market).then(setTicker);
+    getTicker(market).then((t) => setTicker(t));
   }, [market]);
 
   return (

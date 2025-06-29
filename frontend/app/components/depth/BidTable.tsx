@@ -1,7 +1,7 @@
 export const BidTable = ({ bids }: { bids: [string, string][] }) => {
   let currentTotal = 0;
   const relevantBids = bids.slice(0, 15);
-  console.log(relevantBids);
+  // console.log(relevantBids);
   const bidsWithTotal: [string, string, number][] = relevantBids.map(
     ([price, quantity]) => [price, quantity, (currentTotal += Number(quantity))]
   );

@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Depth, KLine, Ticker, Trade } from "./types";
 
-const BASE_URL = "https://exchange-proxy.100xdevs.com/api/v1";
+const BASE_URL = "https://api.backpack.exchange/api/v1";
 
 export async function getTicker(market: string): Promise<Ticker> {
   const tickers = await getTickers();
@@ -23,7 +23,7 @@ export async function getTickers(): Promise<Ticker[]> {
       priceChange: "4.38",
       priceChangePercent: "3.37",
       quoteVolume: "5000000",
-      symbol: "SOL/USDC",
+      symbol: "SOL_USDC",
       trades: "1500",
       volume: "37250",
     },
@@ -35,7 +35,7 @@ export async function getTickers(): Promise<Ticker[]> {
       priceChange: "50.00",
       priceChangePercent: "2.04",
       quoteVolume: "10000000",
-      symbol: "ETH/USDC",
+      symbol: "ETH_USDC",
       trades: "3200",
       volume: "4000",
     },
@@ -60,6 +60,7 @@ export async function getKlines(
   const response = await axios.get(
     `${BASE_URL}/klines?symbol=${market}&interval=${interval}&startTime=${startTime}&endTime=${endTime}`
   );
+  console.log("respone klines: ", response.data);
   const data: KLine[] = response.data;
   return data.sort((x, y) => (Number(x.end) < Number(y.end) ? -1 : 1));
 }
