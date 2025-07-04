@@ -1,20 +1,7 @@
 export const AskTable = ({ asks }: { asks: [string, string][] }) => {
   let currentTotal = 0;
   const relevantAsks = asks.slice(0, 15);
-  /*
-   * 129.93 10
-   * 129.94 5
-   * 132.96 3
-   * 132.97 253.03
-   */
   relevantAsks.reverse();
-  /*
-   * 132.97 253.03     270
-   * 132.96 3    18
-   * 129.94 5    15
-   * 129.93 10   10
-   */
-
   const asksWithTotal: [string, string, number][] = [];
   for (let i = relevantAsks.length - 1; i >= 0; i--) {
     const [price, quantity] = relevantAsks[i];
@@ -24,22 +11,7 @@ export const AskTable = ({ asks }: { asks: [string, string][] }) => {
     (acc, [quantity]) => acc + Number(quantity),
     0
   );
-
-  /*
-     *    129.93 10   10
-
-     * 129.94 5    15
-     * 132.96 3    18
-     * 132.97 253.03     270
-     */
   asksWithTotal.reverse();
-  /*
-         * 132.97 253.03     270
-         * 132.96 3    18
-         * * 129.94 5    15
-     *    129.93 10   10
-
-     */
 
   return (
     <div>

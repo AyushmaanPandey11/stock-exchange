@@ -3,12 +3,46 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import type { Ticker } from "../utils/types";
 import { getTicker } from "../utils/httpClient";
+import { WsManager } from "../utils/WsManager";
 
 export const MarketBar = ({ market }: { market: string }) => {
   const [ticker, setTicker] = useState<Ticker | null>(null);
 
   useEffect(() => {
     getTicker(market).then((t) => setTicker(t));
+    // using ws instance to get the ticker data.
+    WsManager.getInstance().registerCallback(
+      "ticker",
+      (data: Partial<Ticker>) =>
+        setTicker((prevTicker) => ({
+          firstPrice: data?.firstPrice ?? prevTicker?.firstPrice ?? "",
+          high: data?.high ?? prevTicker?.high ?? "",
+          lastPrice: data?.lastPrice ?? prevTicker?.lastPrice ?? "",
+          low: data?.low ?? prevTicker?.low ?? "",
+          priceChange: data?.priceChange ?? prevTicker?.priceChange ?? "",
+          priceChangePercent:
+            data?.priceChangePercent ?? prevTicker?.priceChangePercent ?? "",
+          quoteVolume: data?.quoteVolume ?? prevTicker?.quoteVolume ?? "",
+          symbol: data?.symbol ?? prevTicker?.symbol ?? "",
+          trades: data?.trades ?? prevTicker?.trades ?? "",
+          volume: data?.volume ?? prevTicker?.volume ?? "",
+        })),
+      `ticker-${market}`
+    );
+    // subscribing to the ws for the ticker data
+    WsManager.getInstance().sendMessage({
+      method: "SUBSCRIBE",
+      params: [`ticker.${market}`],
+    });
+
+    // during unmounting
+    return () => {
+      WsManager.getInstance().degisterCallback("ticker", `ticker-${market}`);
+      WsManager.getInstance().sendMessage({
+        method: "UNSUBSCRIBE",
+        params: [`ticker.${market}`],
+      });
+    };
   }, [market]);
 
   return (
