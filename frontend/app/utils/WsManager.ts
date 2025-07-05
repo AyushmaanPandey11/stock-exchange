@@ -33,33 +33,34 @@ export class WsManager {
       this.isInitialized = true;
       // once connection is established first all the queued msgs are sent and reset the array
       this.bufferedMessages.forEach((msg) => {
-        this.ws.send(JSON.stringify({ msg }));
+        this.ws.send(JSON.stringify(msg));
       });
       this.bufferedMessages = [];
     };
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      const type = event.data.e;
-      // on recieving msg from wss checking if the type of mssg belong in callbacks function callback will return data.
-      if (this.callbacks[type]) {
-        this.callbacks[type].forEach(({ callback }) => {
-          // for ticker data
-          if (type === "ticker") {
+      console.log(message); // Log to verify structure
+      const stream = message.data?.e; // e.g., "bookTicker"
+      if (this.callbacks[stream]) {
+        this.callbacks[stream].forEach(({ callback }) => {
+          if (stream === "bookTicker") {
             const newTicker: Partial<Ticker> = {
-              lastPrice: message.data.c,
-              high: message.data.h,
-              low: message.data.l,
-              volume: message.data.v,
-              quoteVolume: message.data.V,
-              symbol: message.data.s,
+              lastPrice: message.data?.b || "", // Use best bid price as lastPrice (or A for ask)
+              high: message.data?.h || "", // Not in WebSocket data, keep as fallback
+              low: message.data?.l || "", // Not in WebSocket data
+              volume: message.data?.v || "", // Not in WebSocket data
+              quoteVolume: message.data?.V || "", // Not in WebSocket data
+              symbol: message.data?.s || "",
+              priceChange: "", // Not in WebSocket data
+              priceChangePercent: "", // Not in WebSocket data
+              firstPrice: "", // Not in WebSocket data
+              trades: "", // Not in WebSocket data
             };
-
             callback(newTicker);
-            // for depth data from ws
-          } else if (type === "depth") {
+          } else if (stream === "depth") {
             const body = {
-              bids: message.data.b,
-              asks: message.data.a,
+              bids: message.data?.b || [],
+              asks: message.data?.a || [],
             };
             callback(body);
           }

@@ -12,7 +12,7 @@ export const MarketBar = ({ market }: { market: string }) => {
     getTicker(market).then((t) => setTicker(t));
     // using ws instance to get the ticker data.
     WsManager.getInstance().registerCallback(
-      "ticker",
+      "bookTicker",
       (data: Partial<Ticker>) =>
         setTicker((prevTicker) => ({
           firstPrice: data?.firstPrice ?? prevTicker?.firstPrice ?? "",
@@ -27,20 +27,23 @@ export const MarketBar = ({ market }: { market: string }) => {
           trades: data?.trades ?? prevTicker?.trades ?? "",
           volume: data?.volume ?? prevTicker?.volume ?? "",
         })),
-      `ticker-${market}`
+      `bookTicker-${market}`
     );
     // subscribing to the ws for the ticker data
     WsManager.getInstance().sendMessage({
       method: "SUBSCRIBE",
-      params: [`ticker.${market}`],
+      params: [`bookTicker.${market}`],
     });
 
     // during unmounting
     return () => {
-      WsManager.getInstance().degisterCallback("ticker", `ticker-${market}`);
+      WsManager.getInstance().deregisterCallback(
+        "bookTicker",
+        `bookTicker-${market}`
+      );
       WsManager.getInstance().sendMessage({
         method: "UNSUBSCRIBE",
-        params: [`ticker.${market}`],
+        params: [`bookTicker.${market}`],
       });
     };
   }, [market]);
