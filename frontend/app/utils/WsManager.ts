@@ -39,22 +39,18 @@ export class WsManager {
     };
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      console.log(message); // Log to verify structure
-      const stream = message.data?.e; // e.g., "bookTicker"
+      const stream = message.data?.e;
       if (this.callbacks[stream]) {
         this.callbacks[stream].forEach(({ callback }) => {
           if (stream === "bookTicker") {
+            console.log(message);
             const newTicker: Partial<Ticker> = {
-              lastPrice: message.data?.b || "", // Use best bid price as lastPrice (or A for ask)
-              high: message.data?.h || "", // Not in WebSocket data, keep as fallback
-              low: message.data?.l || "", // Not in WebSocket data
-              volume: message.data?.v || "", // Not in WebSocket data
-              quoteVolume: message.data?.V || "", // Not in WebSocket data
-              symbol: message.data?.s || "",
-              priceChange: "", // Not in WebSocket data
-              priceChangePercent: "", // Not in WebSocket data
-              firstPrice: "", // Not in WebSocket data
-              trades: "", // Not in WebSocket data
+              lastPrice: message.data.b,
+              high: message.data.h,
+              low: message.data.l,
+              volume: message.data.v,
+              quoteVolume: message.data.V,
+              symbol: message.data.s,
             };
             callback(newTicker);
           } else if (stream === "depth") {
@@ -85,7 +81,7 @@ export class WsManager {
     this.callbacks[type].push({ callback, id });
   }
   // removing hte callbacks from the class
-  degisterCallback(type: string, id: string) {
+  deregisterCallback(type: string, id: string) {
     if (this.callbacks[type]) {
       const index = this.callbacks[type].findIndex((cb) => cb.id === id);
       if (index !== -1) {

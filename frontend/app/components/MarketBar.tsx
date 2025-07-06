@@ -77,7 +77,8 @@ export const MarketBar = ({ market }: { market: string }) => {
               >
                 {Number(ticker?.priceChange) > 0 ? "+" : ""}{" "}
                 {ticker?.priceChange}{" "}
-                {Number(ticker?.priceChangePercent)?.toFixed(2)}%
+                {Number(ticker?.priceChangePercent) > 0 ? "+" : ""}{" "}
+                {(Number(ticker?.priceChangePercent) * 100)?.toFixed(2)}%
               </p>
             </div>
             <div className="flex flex-col">

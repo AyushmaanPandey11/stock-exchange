@@ -36,8 +36,8 @@ export interface Ticker {
   symbol: string;
   trades: string;
   volume: string;
-  bidPrice?: string; // Optional: best bid price
-  bidQuantity?: string; // Optional: best bid quantity
-  askPrice?: string; // Optional: best ask price
-  askQuantity?: string; // Optional: best ask quantity
+  bidPrice?: string;
+  bidQuantity?: string;
+  askPrice?: string;
+  askQuantity?: string;
 }
