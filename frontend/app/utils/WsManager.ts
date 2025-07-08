@@ -43,7 +43,6 @@ export class WsManager {
       if (this.callbacks[stream]) {
         this.callbacks[stream].forEach(({ callback }) => {
           if (stream === "bookTicker") {
-            console.log(message);
             const newTicker: Partial<Ticker> = {
               lastPrice: message.data.b,
               high: message.data.h,

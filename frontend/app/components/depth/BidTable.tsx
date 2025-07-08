@@ -50,7 +50,7 @@ function Bid({
         style={{
           position: "absolute",
           top: 0,
-          left: 0,
+          right: 0,
           width: `${(100 * total) / maxTotal}%`,
           height: "100%",
           background: "rgba(1, 167, 129, 0.325)",
