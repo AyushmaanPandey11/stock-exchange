@@ -24,6 +24,7 @@ export class RedisManager {
   public sendAndAwait(message: MessageToEngine) {
     // async functions always returns a promise when then will be resolve and parsed
     return new Promise<MessageFromOrderbook>((resolve) => {
+      // created randomId for recieving processed order coming from pubsub
       const id = this.getRandomClientId();
       // first the api server subscribes to the pubsub with a clientId and this request is sent to
       // the queue with the clientId which is used to get the process from pubsub from engine
