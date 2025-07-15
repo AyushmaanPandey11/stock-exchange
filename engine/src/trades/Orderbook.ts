@@ -185,6 +185,37 @@ export class Orderbook {
     };
   }
 
+  getOrderbookDepth() {
+    const bids: [string, string][] = [];
+    const asks: [string, string][] = [];
+
+    const bidsObj: { [key: string]: number } = {};
+    const asksObj: { [key: string]: number } = {};
+
+    this.bids.forEach((bid) => {
+      if (!bidsObj[bid.price]) {
+        bidsObj[bid.price] = 0;
+      }
+      bidsObj[bid.price] += bid.quantity - bid.filled;
+    });
+
+    this.asks.forEach((ask) => {
+      if (!asksObj[ask.price]) {
+        asksObj[ask.price] = 0;
+      }
+      asksObj[ask.price] += ask.quantity - ask.filled;
+    });
+
+    for (const price in bidsObj) {
+      bids.push([price, bidsObj[price].toString()]);
+    }
+    for (const price in asksObj) {
+      asks.push([price, asksObj[price].toString()]);
+    }
+
+    return { bids, asks };
+  }
+
   getUserOrderfromOrderBook(userId: string): Order[] {
     const asks = this.asks.filter((ord) => ord.userId === userId);
     const bids = this.bids.filter((ord) => ord.userId === userId);
