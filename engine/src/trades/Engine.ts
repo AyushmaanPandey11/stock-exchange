@@ -1,4 +1,4 @@
-import { Order, Orderbook } from "./Orderbook";
+import { Fill, Order, Orderbook } from "./Orderbook";
 
 export const BASE_CURRENCY = "INR";
 
@@ -67,6 +67,64 @@ export class Engine {
         locked: userBalance[baseAsset].locked + requiredQuantity,
       };
       this.balances.set(userId, userBalance);
+    }
+  }
+
+  updateUserBalance(
+    userId: string,
+    fills: Fill[],
+    baseAsset: string,
+    quoteAsset: string,
+    side: "buy" | "sell"
+  ) {
+    const takerBalance = this.balances.get(userId) as UserBalance;
+    // Note: maker can be different in the orderbook for the different fills
+    // here will be updating the available and locked balances of the taker and markerOrder
+    // if the user is in buy side meaning he is buying the stock implying that his quoteAsset was locked and will be deducted and baseAsset which is available will be incremeneted and vice verse for makerOrder
+    if (side == "buy") {
+      fills.forEach((fill) => {
+        // updating quoteAsset meaning his locked amount will be deducted
+        takerBalance[quoteAsset].locked =
+          takerBalance[quoteAsset].locked - fill.price * fill.quantity;
+
+        // updating baseAsset meaning his availabe amount will be incremented
+        takerBalance[baseAsset].available =
+          takerBalance[baseAsset].available + fill.price * fill.quantity;
+
+        // maker will be sellig the baseAsset meaning baseAsset lock amount will be deducted and quoteAsset available amount will be incremeneted
+        const makerBalance = this.balances.get(
+          fill.markerOrderId
+        ) as UserBalance;
+        // quoteAsset
+        makerBalance[quoteAsset].available =
+          makerBalance[quoteAsset].available + fill.price * fill.quantity;
+        // baseAsset
+        makerBalance[baseAsset].locked =
+          makerBalance[baseAsset].locked - fill.price * fill.quantity;
+      });
+    }
+    // if user is in sell side meaning he is selling the stock -> base assets was locked and will be deducted and available quote assets will be incremented and vice versa for markerOrder
+    else {
+      fills.forEach((fill) => {
+        // updating userId
+        // quoteAsset, will be incremented in available section
+        takerBalance[quoteAsset].available =
+          takerBalance[quoteAsset].available + fill.price * fill.quantity;
+        // baseAsset, will be deducted in locked
+        takerBalance[baseAsset].locked =
+          takerBalance[baseAsset].locked - fill.price * fill.quantity;
+
+        // udpating maker balance
+        const makerBalance = this.balances.get(
+          fill.markerOrderId
+        ) as UserBalance;
+        // quoteAsset, will be deducted in locked
+        makerBalance[quoteAsset].locked =
+          makerBalance[quoteAsset].locked - fill.price * fill.quantity;
+        //baseAsset
+        makerBalance[baseAsset].available =
+          makerBalance[baseAsset].available + fill.price * fill.quantity;
+      });
     }
   }
 

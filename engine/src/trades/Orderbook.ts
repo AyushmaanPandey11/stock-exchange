@@ -8,6 +8,17 @@ export interface Order {
   filled: number;
   side: "buy" | "sell";
 }
+
+export interface Fill {
+  price: number;
+  quantity: number;
+  tradeId: number;
+  // id of the user who send the new transaction order
+  takerId: string;
+  // id of the user whose ask was already on the orderbook
+  markerOrderId: string;
+}
+
 export class Orderbook {
   bids: Order[];
   asks: Order[];
@@ -30,7 +41,7 @@ export class Orderbook {
     this.lastTradeId = lastTradeId;
   }
 
-  getTicker() {
+  getMarket() {
     return `${this.baseAsset}_${this.quoteAsset}`;
   }
 
