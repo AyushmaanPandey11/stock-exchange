@@ -184,4 +184,28 @@ export class Orderbook {
       lastTradeId: this.lastTradeId,
     };
   }
+
+  getUserOrderfromOrderBook(userId: string): Order[] {
+    const asks = this.asks.filter((ord) => ord.userId === userId);
+    const bids = this.bids.filter((ord) => ord.userId === userId);
+    return [...asks, ...bids];
+  }
+
+  cancelBid(order: Order) {
+    const index = this.bids.findIndex((ord) => ord.orderId === order.orderId);
+    if (index !== -1) {
+      const price = this.bids[index].price;
+      this.bids.splice(index, 1);
+      return price;
+    }
+  }
+
+  cancelAsk(order: Order) {
+    const index = this.asks.findIndex((ord) => ord.orderId === order.orderId);
+    if (index !== -1) {
+      const price = this.asks[index].price;
+      this.asks.splice(index, 1);
+      return price;
+    }
+  }
 }
