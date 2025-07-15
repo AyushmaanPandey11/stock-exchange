@@ -85,22 +85,24 @@ export class Engine {
       fills.forEach((fill) => {
         // updating quoteAsset meaning his locked amount will be deducted
         takerBalance[quoteAsset].locked =
-          takerBalance[quoteAsset].locked - fill.price * fill.quantity;
+          takerBalance[quoteAsset].locked - Number(fill.price) * fill.quantity;
 
         // updating baseAsset meaning his availabe amount will be incremented
         takerBalance[baseAsset].available =
-          takerBalance[baseAsset].available + fill.price * fill.quantity;
+          takerBalance[baseAsset].available +
+          Number(fill.price) * fill.quantity;
 
         // maker will be sellig the baseAsset meaning baseAsset lock amount will be deducted and quoteAsset available amount will be incremeneted
         const makerBalance = this.balances.get(
-          fill.markerOrderId
+          fill.makerOrderId
         ) as UserBalance;
         // quoteAsset
         makerBalance[quoteAsset].available =
-          makerBalance[quoteAsset].available + fill.price * fill.quantity;
+          makerBalance[quoteAsset].available +
+          Number(fill.price) * fill.quantity;
         // baseAsset
         makerBalance[baseAsset].locked =
-          makerBalance[baseAsset].locked - fill.price * fill.quantity;
+          makerBalance[baseAsset].locked - Number(fill.price) * fill.quantity;
       });
     }
     // if user is in sell side meaning he is selling the stock -> base assets was locked and will be deducted and available quote assets will be incremented and vice versa for markerOrder
@@ -109,21 +111,23 @@ export class Engine {
         // updating userId
         // quoteAsset, will be incremented in available section
         takerBalance[quoteAsset].available =
-          takerBalance[quoteAsset].available + fill.price * fill.quantity;
+          takerBalance[quoteAsset].available +
+          Number(fill.price) * fill.quantity;
         // baseAsset, will be deducted in locked
         takerBalance[baseAsset].locked =
-          takerBalance[baseAsset].locked - fill.price * fill.quantity;
+          takerBalance[baseAsset].locked - Number(fill.price) * fill.quantity;
 
         // udpating maker balance
         const makerBalance = this.balances.get(
-          fill.markerOrderId
+          fill.makerOrderId
         ) as UserBalance;
         // quoteAsset, will be deducted in locked
         makerBalance[quoteAsset].locked =
-          makerBalance[quoteAsset].locked - fill.price * fill.quantity;
+          makerBalance[quoteAsset].locked - Number(fill.price) * fill.quantity;
         //baseAsset
         makerBalance[baseAsset].available =
-          makerBalance[baseAsset].available + fill.price * fill.quantity;
+          makerBalance[baseAsset].available +
+          Number(fill.price) * fill.quantity;
       });
     }
   }
