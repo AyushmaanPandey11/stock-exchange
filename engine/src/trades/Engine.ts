@@ -1,3 +1,4 @@
+import { RedisManager } from "../RedisManager";
 import { Fill, Order, Orderbook } from "./Orderbook";
 
 export const BASE_CURRENCY = "INR";
@@ -26,13 +27,147 @@ export class Engine {
     this.initializeBalances();
   }
 
+  createOrder(
+    market: string,
+    quantity: string,
+    price: string,
+    side: "buy" | "sell",
+    userId: string
+  ) {
+    // get the orderbook and assets
+    const orderbook = this.orderBooks.find(
+      (order) => order.getMarket() === market
+    );
+    const baseAsset = market.split("_")[0];
+    const quoteAsset = market.split("_")[1];
+
+    if (!orderbook) {
+      throw new Error("No Orderbook found");
+    }
+
+    // lock funds before making an order
+    this.lockAndValidateFunds(
+      baseAsset,
+      quoteAsset,
+      userId,
+      price,
+      quantity,
+      side
+    );
+
+    // create order object
+    const order: Order = {
+      userId: userId,
+      filled: 0,
+      price: Number(price),
+      quantity: Number(quantity),
+      side,
+      orderId:
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15),
+    };
+    // add this order to the orderbook
+    const { executedQuantity, fills } = orderbook.addOrder(order);
+
+    // after completing the order, update the user's balances
+    this.updateUserBalance(userId, fills, baseAsset, quoteAsset, side);
+    // publishing to ws the updated depth only for this order price
+    // this.sendUpdatedDepthForThisOrderPrice(price, market);
+    // send recent trades to ws
+    this.publishRecentTradesToWs(fills, userId, market);
+
+    return {
+      executedQuantity,
+      fills,
+      orderId: order.orderId,
+    };
+  }
+
+  publishWsUpdatedDepthAfterCurrentOrder(
+    fills: Fill[],
+    price: string,
+    market: string,
+    side: "buy" | "sell"
+  ) {
+    const orderbook = this.orderBooks.find((ord) => ord.getMarket() === market);
+    if (!orderbook) {
+      throw new Error("Orderbook doesn't exists!");
+    }
+    const depth = orderbook.getOrderbookDepth();
+    if (side == "buy") {
+      const updatedAsks = depth.asks.filter((x) =>
+        fills.map((f) => f.price).includes(x[0])
+      );
+      const updatedBids = depth.bids.filter((x) => x[0] === price);
+      RedisManager.getInstance().publishWsMessage(`depth-${market}`, {
+        stream: `depth-${market}`,
+        data: {
+          a: updatedAsks,
+          b: updatedBids.length ? updatedBids : [],
+          e: "depth",
+        },
+      });
+    } else {
+      const updatedAsks = depth.asks.filter((x) => x[0] === price);
+      const updateBids = depth.bids.filter((x) =>
+        fills.map((f) => f.price).includes(x[0])
+      );
+      RedisManager.getInstance().publishWsMessage(`depth-${market}`, {
+        stream: `depth-${market}`,
+        data: {
+          a: updatedAsks.length ? updatedAsks : [],
+          b: updateBids,
+          e: "depth",
+        },
+      });
+    }
+  }
+
+  publishRecentTradesToWs(fills: Fill[], userId: string, market: string) {
+    fills.forEach((fill) => {
+      RedisManager.getInstance().publishWsMessage(`trades-${market}`, {
+        stream: `trade-${market}`,
+        data: {
+          e: "trade",
+          t: fill.tradeId,
+          p: fill.price,
+          q: fill.quantity.toString(),
+          s: market,
+          u: fill.otherUserId === userId,
+        },
+      });
+    });
+  }
+
+  sendUpdatedDepthAfterCancellationForthePrice(price: string, market: string) {
+    const orderbook = this.orderBooks.find(
+      (orderbk) => orderbk.getMarket() === market
+    );
+    if (!orderbook) {
+      throw new Error("No Orderbook found");
+    }
+    const depth = orderbook.getOrderbookDepth();
+    const updatedBids = depth.bids.filter((x) => x[0] === price);
+    const updatedAsks = depth.asks.filter((x) => x[0] === price);
+
+    RedisManager.getInstance().publishWsMessage(`depth-${market}`, {
+      stream: `depth-${market}`,
+      data: {
+        a: updatedAsks.length ? updatedAsks : [[price, "0"]],
+        b: updatedBids.length ? updatedBids : [[price, "0"]],
+        s: market,
+        e: "depth",
+      },
+    });
+  }
+
   // it is required to prevent usage of the existing funds which is currently being processed for earlier transaction
   lockAndValidateFunds(
     baseAsset: string,
     quoteAsset: string,
     userId: string,
-    price: number,
-    quantity: number,
+    price: string,
+    quantity: string,
     side: "buy" | "sell"
   ) {
     const userBalance = this.balances.get(userId);
