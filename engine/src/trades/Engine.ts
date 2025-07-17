@@ -1,4 +1,5 @@
 import { RedisManager } from "../RedisManager";
+import { MessageFromApi } from "../types/fromApi";
 import { Fill, Order, Orderbook } from "./Orderbook";
 
 export const BASE_CURRENCY = "INR";
@@ -22,9 +23,55 @@ export class Engine {
   // syntax means that the one user can have multiple objects of userBalances where key will be assets
   private balances: Map<string, UserBalance> = new Map();
 
-  private constructor() {
+  constructor() {
     this.orderBooks = [new Orderbook(`TATA`, [], [], 0, 0)];
     this.initializeBalances();
+  }
+
+  process({
+    message,
+    clientId,
+  }: {
+    message: MessageFromApi;
+    clientId: string;
+  }) {
+    switch (message.type) {
+      case "CREATE_ORDER":
+        try {
+          const { market, price, quantity, side, userId } = message.data;
+          const { orderId, executedQuantity, fills } = this.createOrder(
+            market,
+            quantity,
+            price,
+            side,
+            userId
+          );
+          //publishing to the redis pubsub to which api server is subscribed for this clientId
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "ORDER_PLACED",
+            payload: {
+              orderId,
+              executedQuantity,
+              fills,
+            },
+          });
+        } catch (e) {
+          console.error(e);
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "ORDER_CANCELLED",
+            payload: {
+              orderId: "",
+              executedQty: 0,
+              remainingQty: 0,
+            },
+          });
+        }
+
+        break;
+
+      default:
+        break;
+    }
   }
 
   createOrder(

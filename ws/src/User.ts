@@ -5,9 +5,9 @@ export class User {
   private ws: WebSocket;
   private subscriptions: string[] = [];
 
-  constructor(id: string, ws: WebSocket) {
+  constructor(id: string, wsUser: WebSocket) {
     this.id = id;
-    this.ws = ws;
+    this.ws = wsUser;
   }
 
   private addSubscriptions(subcription: string) {
