@@ -75,7 +75,8 @@ export class Engine {
     // this.sendUpdatedDepthForThisOrderPrice(price, market);
     // send recent trades to ws
     this.publishRecentTradesToWs(fills, userId, market);
-
+    //publishing updated depth to users using ws
+    this.publishWsUpdatedDepthAfterCurrentOrder(fills, price, market, side);
     return {
       executedQuantity,
       fills,
@@ -125,7 +126,7 @@ export class Engine {
 
   publishRecentTradesToWs(fills: Fill[], userId: string, market: string) {
     fills.forEach((fill) => {
-      RedisManager.getInstance().publishWsMessage(`trades-${market}`, {
+      RedisManager.getInstance().publishWsMessage(`trade-${market}`, {
         stream: `trade-${market}`,
         data: {
           e: "trade",
