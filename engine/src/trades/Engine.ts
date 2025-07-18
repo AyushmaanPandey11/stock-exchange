@@ -1,5 +1,12 @@
 import { RedisManager } from "../RedisManager";
-import { MessageFromApi } from "../types/fromApi";
+import {
+  CANCEL_ORDER,
+  CREATE_ORDER,
+  GET_DEPTH,
+  GET_OPEN_ORDERS,
+  MessageFromApi,
+  ON_RAMP,
+} from "../types/fromApi";
 import { Fill, Order, Orderbook } from "./Orderbook";
 
 export const BASE_CURRENCY = "INR";
@@ -36,7 +43,7 @@ export class Engine {
     clientId: string;
   }) {
     switch (message.type) {
-      case "CREATE_ORDER":
+      case CREATE_ORDER:
         try {
           const { market, price, quantity, side, userId } = message.data;
           const { orderId, executedQuantity, fills } = this.createOrder(
@@ -69,7 +76,120 @@ export class Engine {
 
         break;
 
-      default:
+      case GET_DEPTH:
+        try {
+          const market = message.data.market;
+          const orderbook = this.orderBooks.find(
+            (o) => o.getMarket() === market
+          );
+          if (!orderbook) {
+            throw new Error("Orderbook doesn't exists");
+          }
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "DEPTH",
+            payload: orderbook.getOrderbookDepth(),
+          });
+        } catch (error) {
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "DEPTH",
+            payload: {
+              asks: [],
+              bids: [],
+            },
+          });
+        }
+        break;
+
+      case ON_RAMP:
+        const userId = message.data.userId;
+        const amount = Number(message.data.amount);
+        this.AddBaseFunds(userId, amount);
+        break;
+
+      case GET_OPEN_ORDERS:
+        try {
+          const { market, userId } = message.data;
+          const orderbook = this.orderBooks.find(
+            (o) => o.getMarket() === market
+          );
+          if (!orderbook) {
+            throw new Error("orderbook doesn't exists");
+          }
+          const openOrders = orderbook.getUserOrderfromOrderBook(userId);
+          RedisManager.getInstance().sendToApi(clientId, {
+            type: "OPEN_ORDERS",
+            payload: openOrders,
+          });
+        } catch (error) {
+          {
+            RedisManager.getInstance().sendToApi(clientId, {
+              type: "OPEN_ORDERS",
+              payload: [],
+            });
+          }
+        }
+        break;
+      case CANCEL_ORDER:
+        try {
+          const { market, orderId } = message.data;
+          const quoteAsset = market.split("_")[1];
+          const orderbook = this.orderBooks.find(
+            (o) => o.getMarket() === market
+          );
+          if (!orderbook) {
+            throw new Error("Orderbook doesn't exists");
+          }
+          const order =
+            orderbook.asks.find((ord) => ord.orderId === orderId) ||
+            orderbook.bids.find((ord) => ord.orderId === orderId);
+          if (!order) {
+            throw new Error("Order doesn't exists");
+          }
+          // cancelling order from orderbook
+          if (order.side === "buy") {
+            const price = orderbook.cancelBid(order);
+            const totalAmount = (order.quantity - order.filled) * order.price;
+            // updating users balances
+            const buyerBalance = this.balances.get(order.userId);
+            if (!buyerBalance) {
+              throw new Error("User balances doesn't exists");
+            }
+            buyerBalance[BASE_CURRENCY].available += totalAmount;
+            buyerBalance[BASE_CURRENCY].locked -= totalAmount;
+            if (price) {
+              this.sendUpdatedDepthAfterCancellationForthePrice(
+                price?.toString(),
+                market
+              );
+            }
+          } else {
+            const price = orderbook.cancelAsk(order);
+            const totalAmount = order.quantity - order.filled;
+            const sellerBalance = this.balances.get(order.userId);
+            if (!sellerBalance) {
+              throw new Error("user balances doesn't exists");
+            }
+            sellerBalance[quoteAsset].available += totalAmount;
+            sellerBalance[quoteAsset].locked -= totalAmount;
+            if (price) {
+              this.sendUpdatedDepthAfterCancellationForthePrice(
+                price.toString(),
+                market
+              );
+            }
+            RedisManager.getInstance().sendToApi(clientId, {
+              type: CANCEL_ORDER,
+              payload: {
+                orderId,
+                executedQuantity: 0,
+                remaininQuantity: 0,
+              },
+            });
+          }
+        } catch (error) {
+          console.log("Error hwile cancelling order");
+          console.log(error);
+        }
         break;
     }
   }
