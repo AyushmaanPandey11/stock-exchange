@@ -31,7 +31,7 @@ export class Engine {
   private balances: Map<string, UserBalance> = new Map();
 
   constructor() {
-    this.orderBooks = [new Orderbook(`TATA`, [], [], 0, 0)];
+    this.orderBooks = [new Orderbook(`LADDOO`, [], [], 0, 0)];
     this.initializeBalances();
   }
 
@@ -460,7 +460,7 @@ export class Engine {
         available: 10000000,
         locked: 0,
       },
-      TATA: {
+      LADDOO: {
         available: 10000000,
         locked: 0,
       },
@@ -471,7 +471,7 @@ export class Engine {
         available: 10000000,
         locked: 0,
       },
-      TATA: {
+      LADDOO: {
         available: 10000000,
         locked: 0,
       },
@@ -482,7 +482,7 @@ export class Engine {
         available: 10000000,
         locked: 0,
       },
-      TATA: {
+      LADDOO: {
         available: 10000000,
         locked: 0,
       },

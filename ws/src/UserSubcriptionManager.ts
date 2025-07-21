@@ -3,7 +3,9 @@ import { UserManager } from "./UserManager";
 
 export class UserSubscriptionManager {
   private static instance: UserSubscriptionManager;
+  // user -> subscriptions[] map
   private userSubscriptions: Map<string, string[]> = new Map();
+  // subscription -> subscribedUsers[]
   private subscriptionToUsers: Map<string, string[]> = new Map();
   private redisClient: RedisClientType;
 

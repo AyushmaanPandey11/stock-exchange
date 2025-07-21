@@ -1,5 +1,6 @@
 import { WebSocket } from "ws";
 import { User } from "./User";
+import { UserSubscriptionManager } from "./UserSubcriptionManager";
 
 export class UserManager {
   private static instance: UserManager;
@@ -34,6 +35,7 @@ export class UserManager {
   private deregisterUserOnClose(id: string, ws: WebSocket) {
     ws.on("close", () => {
       this.users.delete(id);
+      UserSubscriptionManager.getInstance().userLeft(id);
     });
   }
   public getUser(id: string) {
