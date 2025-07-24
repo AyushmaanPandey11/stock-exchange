@@ -37,13 +37,13 @@ export const deleteOrder = async (req: Request, res: Response) => {
 };
 
 export const getOpenOrders = async (req: Request, res: Response) => {
-  const { market, userId } = req.body;
+  const { market, userId } = req.params;
   const response: MessageFromOrderbook =
     await RedisManager.getInstance().sendAndAwait({
       type: GET_OPEN_ORDERS,
       data: {
-        market,
-        userId,
+        market: market as string,
+        userId: userId as string,
       },
     });
   return res.json(response.payload);
