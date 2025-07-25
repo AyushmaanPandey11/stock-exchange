@@ -9,4 +9,4 @@ export const orderRouter = Router();
 
 orderRouter.post("/createOrder", createOrder);
 orderRouter.delete("/deleteOrder", deleteOrder);
-orderRouter.get("/openOrders/:userId/:market", getOpenOrders);
+orderRouter.get("/openOrders", getOpenOrders);
