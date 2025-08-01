@@ -7,6 +7,7 @@ import {
   MessageFromApi,
   ON_RAMP,
 } from "../types/fromApi";
+import { ORDER_UPDATE, TRADE_ADDED } from "../types/db";
 import { Fill, Order, Orderbook } from "./Orderbook";
 
 export const BASE_CURRENCY = "INR";
@@ -194,6 +195,46 @@ export class Engine {
     }
   }
 
+  updateDbOrders(order: Order, executedQty: number, fills: Fill[]) {
+    RedisManager.getInstance().publishDbMessage({
+      type: ORDER_UPDATE,
+      data: {
+        orderId: order.orderId,
+        executedQty: executedQty,
+        price: order.price.toString(),
+        quantity: order.quantity.toString(),
+        side: order.side,
+      },
+    });
+
+    fills.forEach((fill) => {
+      RedisManager.getInstance().publishDbMessage({
+        type: ORDER_UPDATE,
+        data: {
+          orderId: fill.makerOrderId,
+          executedQty: fill.quantity,
+        },
+      });
+    });
+  }
+
+  createDbTrades(fills: Fill[], market: string, userId: string) {
+    fills.forEach((fill) => {
+      RedisManager.getInstance().publishDbMessage({
+        type: TRADE_ADDED,
+        data: {
+          market: market,
+          id: fill.tradeId.toString(),
+          price: fill.price,
+          quantity: fill.quantity.toString(),
+          quoteQuantity: (fill.quantity * Number(fill.price)).toString(),
+          timestamp: Date.now(),
+          isBuyerMaker: fill.otherUserId === userId,
+        },
+      });
+    });
+  }
+
   createOrder(
     market: string,
     quantity: string,
@@ -244,6 +285,9 @@ export class Engine {
     this.publishRecentTradesToWs(fills, userId, market);
     //publishing updated depth to users using ws
     this.publishWsUpdatedDepthAfterCurrentOrder(fills, price, market, side);
+    // messages to db
+    this.createDbTrades(fills, market, userId);
+    this.updateDbOrders(order, executedQuantity, fills);
     return {
       executedQuantity,
       fills,
