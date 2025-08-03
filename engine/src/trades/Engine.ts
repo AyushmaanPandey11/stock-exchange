@@ -218,7 +218,7 @@ export class Engine {
     });
   }
 
-  createDbTrades(fills: Fill[], market: string, userId: string) {
+  createDbTrades(fills: Fill[], market: string, side: "buy" | "sell") {
     fills.forEach((fill) => {
       RedisManager.getInstance().publishDbMessage({
         type: TRADE_ADDED,
@@ -229,7 +229,7 @@ export class Engine {
           quantity: fill.quantity.toString(),
           quoteQuantity: (fill.quantity * Number(fill.price)).toString(),
           timestamp: Date.now(),
-          isBuyerMaker: fill.otherUserId === userId,
+          isBuyerMaker: side === "sell",
         },
       });
     });
@@ -282,11 +282,11 @@ export class Engine {
     // publishing to ws the updated depth only for this order price
     // this.sendUpdatedDepthForThisOrderPrice(price, market);
     // send recent trades to ws
-    this.publishRecentTradesToWs(fills, userId, market);
+    this.publishRecentTradesToWs(fills, market, side);
     //publishing updated depth to users using ws
     this.publishWsUpdatedDepthAfterCurrentOrder(fills, price, market, side);
     // messages to db
-    this.createDbTrades(fills, market, userId);
+    this.createDbTrades(fills, market, side);
     this.updateDbOrders(order, executedQuantity, fills);
     return {
       executedQuantity,
@@ -335,7 +335,7 @@ export class Engine {
     }
   }
 
-  publishRecentTradesToWs(fills: Fill[], userId: string, market: string) {
+  publishRecentTradesToWs(fills: Fill[], market: string, side: "buy" | "sell") {
     fills.forEach((fill) => {
       RedisManager.getInstance().publishWsMessage(`trade-${market}`, {
         stream: `trade-${market}`,
@@ -345,7 +345,7 @@ export class Engine {
           p: fill.price,
           q: fill.quantity.toString(),
           s: market,
-          u: fill.otherUserId === userId,
+          m: side === "sell",
         },
       });
     });

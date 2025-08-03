@@ -34,8 +34,9 @@ const main = async () => {
           continue;
         }
         const timestamp = new Date(data.data.timestamp);
-        const query = `INSERT INTO laddoo_price (id, time, price) VALUES ($1, $2, $3)`;
-        const values = [data.data.id, timestamp, price];
+        const isBuyerMaker: boolean = data.data.isBuyerMaker;
+        const query = `INSERT INTO laddoo_price (id, time, price, is_buyer_maker) VALUES ($1, $2, $3, $4)`;
+        const values = [data.data.id, timestamp, price, isBuyerMaker];
         await pgClient.query(query, values);
       } else if (data.type === "ORDER_UPDATE") {
         console.log(`trade being updated ${JSON.stringify(data)}`);
@@ -58,3 +59,5 @@ const main = async () => {
     }
   }
 };
+
+main();

@@ -13,8 +13,8 @@ export interface Fill {
   price: string;
   quantity: number;
   tradeId: number;
-  // id of the user who was in the orderbook
-  otherUserId: string;
+  // id of the user who matched with order from orderbook
+  makerUserId: string;
   // id of the order from orderbook
   makerOrderId: string;
 }
@@ -114,7 +114,7 @@ export class Orderbook {
           quantity: filledQty,
           tradeId: this.lastTradeId++,
           makerOrderId: this.asks[idx].orderId,
-          otherUserId: this.asks[idx].userId,
+          makerUserId: this.asks[idx].userId,
         });
       }
     }
@@ -154,7 +154,7 @@ export class Orderbook {
           price: this.bids[idx].price.toString(),
           makerOrderId: this.bids[idx].orderId,
           quantity: filledQty,
-          otherUserId: this.bids[idx].userId,
+          makerUserId: this.bids[idx].userId,
           tradeId: this.lastTradeId++,
         });
       }

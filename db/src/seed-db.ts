@@ -14,13 +14,14 @@ const initDB = async () => {
     console.log("Connected to database");
     await pgClient.query(`CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`);
 
-    await pgClient.query(`DROP TABLE IF NOT EXISTS "laddoo_prices"`);
+    await pgClient.query(`DROP TABLE IF EXISTS "laddoo_prices"`);
     await pgClient.query(`
       CREATE TABLE "laddoo_prices" (
+        id BIGINT PRIMARY KEY,
         time TIMESTAMP WITH TIME ZONE NOT NULL,
         price DOUBLE PRECISION,
         volume DOUBLE PRECISION,
-        currency_code VARCHAR(10)
+        is_buyer_maker BOOLEAN
       );
     `);
     await pgClient.query(`
@@ -37,10 +38,9 @@ const initDB = async () => {
         max(price) AS high,
         min(price) AS low,
         last(price, time) AS close,
-        sum(volume) AS volume,
-        currency_code
+        sum(volume) AS volume
       FROM laddoo_prices
-      GROUP BY bucket, currency_code
+      GROUP BY bucket
       WITH NO DATA;
     `);
 
@@ -54,10 +54,9 @@ const initDB = async () => {
         max(price) AS high,
         min(price) AS low,
         last(price, time) AS close,
-        sum(volume) AS volume,
-        currency_code
+        sum(volume) AS volume
       FROM laddoo_prices
-      GROUP BY bucket, currency_code
+      GROUP BY bucket
       WITH NO DATA;
     `);
 
@@ -71,10 +70,9 @@ const initDB = async () => {
         max(price) AS high,
         min(price) AS low,
         last(price, time) AS close,
-        sum(volume) AS volume,
-        currency_code
+        sum(volume) AS volume
       FROM laddoo_prices
-      GROUP BY bucket, currency_code
+      GROUP BY bucket
       WITH NO DATA;
     `);
 
@@ -100,12 +98,10 @@ const initDB = async () => {
         schedule_interval => INTERVAL '1 week');
     `);
 
-    // Optionally, create an index on currency_code for faster queries
-    await pgClient.query(`
-      CREATE INDEX IF NOT EXISTS laddoo_prices_currency_code_idx
-      ON "laddoo_prices" (currency_code);
-    `);
-
     console.log("Database initialized successfully");
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error initializing database:", error);
+  }
 };
+
+initDB().catch(console.error);
