@@ -5,7 +5,7 @@ const client = new Client({
   host: "localhost",
   database: "my_db",
   password: "password123",
-  port: 5432,
+  port: 5433,
 });
 
 async function initialize() {
