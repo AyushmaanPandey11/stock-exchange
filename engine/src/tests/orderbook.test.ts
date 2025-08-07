@@ -1,4 +1,4 @@
-import { vi, it, describe, expect } from "vitest";
+import { it, describe, expect } from "vitest";
 import { Order, Orderbook } from "../trades/Orderbook";
 
 describe("Simple Orderbook Methods Testing", () => {
@@ -50,7 +50,39 @@ describe("Simple Orderbook Methods Testing", () => {
 });
 
 describe("Self trade prevention", () => {
-  it("User cannot self-trade", () => {
+  it("User cannot self-trade buying order", () => {
+    const orderbook = new Orderbook(
+      "LADDOO",
+      [],
+      [
+        {
+          price: 100,
+          quantity: 1,
+          orderId: "1",
+          userId: "1",
+          filled: 0,
+          side: "sell" as "buy" | "sell",
+        },
+      ],
+      0,
+      0
+    );
+    const order: Order = {
+      price: 100,
+      filled: 0,
+      orderId: "2",
+      quantity: 1,
+      side: "buy" as "buy" | "sell",
+      userId: "1",
+    };
+    const { executedQuantity, fills } = orderbook.addOrder(order);
+    expect(executedQuantity).toBe(0);
+    expect(fills.length).toBe(0);
+
+    expect(orderbook.bids).toContainEqual(expect.objectContaining(order));
+  });
+
+  it("User cannot self-trade selling order", () => {
     const orderbook = new Orderbook(
       "LADDOO",
       [

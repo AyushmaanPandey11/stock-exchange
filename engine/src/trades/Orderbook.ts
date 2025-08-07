@@ -141,7 +141,7 @@ export class Orderbook {
       if (
         this.bids[idx].price >= order.price &&
         executedQuantity < order.quantity - order.filled &&
-        this.bids[idx].orderId !== order.orderId
+        this.bids[idx].userId !== order.userId
       ) {
         const filledQty = Math.min(
           this.bids[idx].quantity - this.bids[idx].filled,

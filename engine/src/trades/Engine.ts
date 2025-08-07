@@ -1,4 +1,3 @@
-import { RedisManager } from "../RedisManager";
 import {
   CANCEL_ORDER,
   CREATE_ORDER,
@@ -9,6 +8,7 @@ import {
 } from "../types/fromApi";
 import { ORDER_UPDATE, TRADE_ADDED } from "../types/db";
 import { Fill, Order, Orderbook } from "./Orderbook";
+import { RedisManager } from "../RedisManager";
 
 export const BASE_CURRENCY = "INR";
 

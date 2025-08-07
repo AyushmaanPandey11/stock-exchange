@@ -1,13 +1,15 @@
 import { vi, describe, it, expect } from "vitest";
-import { RedisManager } from "../RedisManager";
 import { Engine } from "../trades/Engine";
 import { CREATE_ORDER } from "../types/fromApi";
 
 // creating a fake modeules of redisManager, to prevent this testing execution to get process with real ones
 vi.mock("../RedisManager", () => ({
   RedisManager: {
-    publishMessage: () => vi.fn(),
-    sendToApi: () => vi.fn(),
+    getInstance: vi.fn().mockReturnValue({
+      publishWsMessage: vi.fn(),
+      sendToApi: vi.fn(),
+      publishDbMessage: vi.fn(),
+    }),
   },
 }));
 
