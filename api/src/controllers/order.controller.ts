@@ -37,14 +37,18 @@ export const deleteOrder = async (req: Request, res: Response) => {
 };
 
 export const getOpenOrders = async (req: Request, res: Response) => {
-  const { market, userId } = req.query;
-  const response: MessageFromOrderbook =
-    await RedisManager.getInstance().sendAndAwait({
-      type: GET_OPEN_ORDERS,
-      data: {
-        market: market as string,
-        userId: userId as string,
-      },
-    });
-  return res.json(response.payload);
+  try {
+    const { market, userId } = req.query;
+    const response: MessageFromOrderbook =
+      await RedisManager.getInstance().sendAndAwait({
+        type: GET_OPEN_ORDERS,
+        data: {
+          market: market as string,
+          userId: userId as string,
+        },
+      });
+    return res.json(response.payload);
+  } catch (error) {
+    res.status(500).json({ message: "issue from server side" });
+  }
 };

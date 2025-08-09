@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://localhost:5000";
 const TOTALBIDS = 20;
 const TOTALASKS = 20;
 const Market = "LADDOO_INR";
@@ -27,15 +27,21 @@ async function main() {
   const totalBids = openOrder.data.filter((o: any) => o.side === "buy").length;
   const totalAsks = openOrder.data.filter((o: any) => o.side === "sell").length;
 
-  const cancelledBids = await CancelBidOrdersMoreThanThePrice(totalBids, price);
-  const cancelledAsks = await CancelAskOrdersLessThanThePrice(totalAsks, price);
+  const cancelledBids = await CancelBidOrdersMoreThanThePrice(
+    openOrder.data,
+    price
+  );
+  const cancelledAsks = await CancelAskOrdersLessThanThePrice(
+    openOrder.data,
+    price
+  );
 
   let BidsToAdd = TOTALBIDS - cancelledBids - totalBids;
   let AsksToAdd = TOTALASKS - cancelledAsks - totalAsks;
 
   while (BidsToAdd > 0 || AsksToAdd > 0) {
     if (BidsToAdd > 0) {
-      await axios.post(`${BASE_URL}/api/v1/order`, {
+      await axios.post(`${BASE_URL}/api/v1/order/createOrder`, {
         market: Market,
         price: (price - Math.random() * 1).toFixed(1).toString(),
         quantity: "1",
@@ -99,3 +105,7 @@ const CancelAskOrdersLessThanThePrice = async (
   await Promise.all(promises);
   return promises.length;
 };
+
+main().then(() => {
+  console.log(`orders addeds to engine`);
+});

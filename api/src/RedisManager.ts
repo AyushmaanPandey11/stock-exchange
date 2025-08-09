@@ -11,7 +11,7 @@ export class RedisManager {
     this.pubSubClient = createClient();
     this.pubSubClient.connect();
     this.queuePublisher = createClient();
-    this.pubSubClient.connect();
+    this.queuePublisher.connect();
   }
 
   public static getInstance() {
@@ -34,7 +34,7 @@ export class RedisManager {
       });
       // request is sent to the queue with the clientId
       this.queuePublisher.lPush(
-        "message",
+        "messages",
         JSON.stringify({ clientId: id, message })
       );
     });

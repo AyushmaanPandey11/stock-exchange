@@ -4,7 +4,11 @@ import { pgClient } from "../db/db";
 export const getTrades = async (req: Request, res: Response) => {
   try {
     const { limit } = req.query;
-
+    if (!limit) {
+      res.status(404).json({
+        message: "Please share limit in the request query params",
+      });
+    }
     let query = `
       SELECT time, price, volume,is_buyer_maker FROM laddoo_prices ORDER BY time DESC LIMIT $1
     `;

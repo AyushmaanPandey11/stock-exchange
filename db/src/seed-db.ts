@@ -12,64 +12,73 @@ const initDB = async () => {
   try {
     await pgClient.connect();
     console.log("Connected to database");
+
+    // Create TimescaleDB extension if not exists
     await pgClient.query(`CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;`);
 
-    await pgClient.query(`DROP TABLE IF EXISTS "laddoo_prices"`);
+    // Drop table if exists
+    await pgClient.query(`DROP TABLE IF EXISTS "laddoo_prices" CASCADE;`);
+
+    // Create laddoo_prices table with BIGSERIAL for auto-incrementing ID and composite primary key
     await pgClient.query(`
       CREATE TABLE "laddoo_prices" (
-        id BIGINT PRIMARY KEY,
+        id BIGSERIAL NOT NULL,
+        order_id BIGINT NOT NULL,
         time TIMESTAMP WITH TIME ZONE NOT NULL,
-        price DOUBLE PRECISION,
-        volume DOUBLE PRECISION,
-        is_buyer_maker BOOLEAN
+        price DOUBLE PRECISION NOT NULL,
+        volume DOUBLE PRECISION NOT NULL,
+        is_buyer_maker BOOLEAN NOT NULL,
+        PRIMARY KEY (id, time)
       );
     `);
+
+    // Convert to hypertable
     await pgClient.query(`
-      SELECT create_hypertable('laddoo_prices', 'time', chunk_time_interval => '1 day');
+      SELECT create_hypertable('laddoo_prices', 'time', chunk_time_interval => INTERVAL '1 day');
     `);
 
-    // Create continuous aggregate for 1-minute klines
+    // Create continuous aggregate for 1-minute klines with explicit type casting
     await pgClient.query(`
       CREATE MATERIALIZED VIEW klines_1m
       WITH (timescaledb.continuous) AS
       SELECT
         time_bucket('1 minute', time) AS bucket,
-        first(price, time) AS open,
+        first(price::DOUBLE PRECISION, time) AS open,
         max(price) AS high,
         min(price) AS low,
-        last(price, time) AS close,
+        last(price::DOUBLE PRECISION, time) AS close,
         sum(volume) AS volume
       FROM laddoo_prices
       GROUP BY bucket
       WITH NO DATA;
     `);
 
-    // Create continuous aggregate for 1-hour klines
+    // Create continuous aggregate for 1-hour klines with explicit type casting
     await pgClient.query(`
       CREATE MATERIALIZED VIEW klines_1h
       WITH (timescaledb.continuous) AS
       SELECT
         time_bucket('1 hour', time) AS bucket,
-        first(price, time) AS open,
+        first(price::DOUBLE PRECISION, time) AS open,
         max(price) AS high,
         min(price) AS low,
-        last(price, time) AS close,
+        last(price::DOUBLE PRECISION, time) AS close,
         sum(volume) AS volume
       FROM laddoo_prices
       GROUP BY bucket
       WITH NO DATA;
     `);
 
-    // Create continuous aggregate for 1-week klines
+    // Create continuous aggregate for 1-week klines with explicit type casting
     await pgClient.query(`
       CREATE MATERIALIZED VIEW klines_1w
       WITH (timescaledb.continuous) AS
       SELECT
         time_bucket('1 week', time) AS bucket,
-        first(price, time) AS open,
+        first(price::DOUBLE PRECISION, time) AS open,
         max(price) AS high,
         min(price) AS low,
-        last(price, time) AS close,
+        last(price::DOUBLE PRECISION, time) AS close,
         sum(volume) AS volume
       FROM laddoo_prices
       GROUP BY bucket
@@ -101,7 +110,16 @@ const initDB = async () => {
     console.log("Database initialized successfully");
   } catch (error) {
     console.error("Error initializing database:", error);
+    throw error; // Rethrow to allow caller to handle
+  } finally {
+    // Always close the connection
+    await pgClient
+      .end()
+      .catch((err) => console.error("Error closing database connection:", err));
   }
 };
 
-initDB().catch(console.error);
+initDB().catch((error) => {
+  console.error("Failed to initialize database:", error);
+  process.exit(1); // Exit with error code
+});
