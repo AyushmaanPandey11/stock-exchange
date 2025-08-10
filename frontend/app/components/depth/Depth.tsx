@@ -1,16 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { getDepth, getTicker, getTrades } from "../../utils/httpClient";
 import { BidTable } from "./BidTable";
 import { AskTable } from "./AskTable";
 import { WsManager } from "@/app/utils/WsManager";
-import { Ticker } from "@/app/utils/types";
+import { Ticker, Trade } from "@/app/utils/types";
+import { TradeTable } from "./TradeTable";
 
 export function Depth({ market }: { market: string }) {
   const [bids, setBids] = useState<[string, string][]>();
   const [asks, setAsks] = useState<[string, string][]>();
   const [price, setPrice] = useState<string>();
+  const [trades, setTrades] = useState<Trade[]>();
+  const [isSelected, setIsSelected] = useState<"Depth" | "Trades">("Depth");
 
   useEffect(() => {
     WsManager.getInstance().registerCallback(
@@ -97,6 +100,11 @@ export function Depth({ market }: { market: string }) {
       params: [`depth.${market}`],
     });
 
+    WsManager.getInstance().sendMessage({
+      method: "SUBSCRIBE",
+      params: [`trade.${market}`],
+    });
+
     getDepth(market).then((d) => {
       setBids(d.bids.reverse());
       setAsks(d.asks);
@@ -105,6 +113,7 @@ export function Depth({ market }: { market: string }) {
     // Fetch latest price from trades
     getTicker(market).then((t) => setPrice(t.lastPrice));
     getTrades(market).then((t) => {
+      setTrades(t);
       console.log(t[0].price);
       setPrice(t[0].price);
     });
@@ -114,6 +123,16 @@ export function Depth({ market }: { market: string }) {
       (data: Partial<Ticker>) =>
         setPrice((prevTicker) => data?.lastPrice ?? prevTicker ?? ""),
       `bookTicker-${market}`
+    );
+
+    WsManager.getInstance().registerCallback(
+      "trade",
+      (data: Trade) =>
+        setTrades((prevTrades) => {
+          if (!data) return prevTrades;
+          return prevTrades ? [data, ...prevTrades] : [data];
+        }),
+      `trade-${market}`
     );
 
     // Cleanup on unmount
@@ -127,25 +146,68 @@ export function Depth({ market }: { market: string }) {
         "bookTicker",
         `bookTicker-${market}`
       );
+      WsManager.getInstance().deregisterCallback("trade", `trade-${market}`);
     };
   }, [market]);
 
   return (
     <div>
-      <TableHeader />
-      {asks && <AskTable asks={asks} />}
-      {price && <div>{price}</div>}
-      {bids && <BidTable bids={bids} />}
+      <TableHeader setIsSelected={setIsSelected} isSelected={isSelected} />
+      {isSelected === "Depth" ? (
+        <>
+          {asks && <AskTable asks={asks} />}
+          {price && <div>{price}</div>}
+          {bids && <BidTable bids={bids} />}
+        </>
+      ) : (
+        <>
+          <TradeTable trades={trades} />
+        </>
+      )}
     </div>
   );
 }
 
-function TableHeader() {
+function TableHeader({
+  setIsSelected,
+  isSelected,
+}: {
+  setIsSelected: Dispatch<SetStateAction<"Depth" | "Trades">>;
+  isSelected: "Depth" | "Trades";
+}) {
   return (
-    <div className="flex justify-between text-xs">
-      <div className="text-white">Price</div>
-      <div className="text-slate-500">Size</div>
-      <div className="text-slate-500">Total</div>
+    <div>
+      <div className="flex justify-evenly text-xs p-1">
+        <div
+          className={`${
+            isSelected === "Depth" ? "text-white" : "text-slate-500"
+          } hover:cursor-pointer`}
+          onClick={() => {
+            setIsSelected("Depth");
+          }}
+        >
+          Depth
+        </div>
+        <div
+          className={`${
+            isSelected === "Trades" ? "text-white" : "text-slate-500"
+          } hover:cursor-pointer`}
+          onClick={() => {
+            setIsSelected("Trades");
+          }}
+        >
+          Trades
+        </div>
+      </div>
+      <div className="flex justify-between text-xs p-0.5">
+        <div className="text-white">Price</div>
+        <div className="text-white">
+          {isSelected === "Depth" ? "Size" : "Qty"}
+        </div>
+        <div className="text-white">
+          {isSelected === "Depth" ? "Total" : "Time"}
+        </div>
+      </div>
     </div>
   );
 }

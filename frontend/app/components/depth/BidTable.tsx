@@ -45,6 +45,7 @@ function Bid({
         backgroundColor: "transparent",
         overflow: "hidden",
       }}
+      className="my-0.5"
     >
       <div
         style={{
@@ -56,6 +57,7 @@ function Bid({
           background: "rgba(1, 167, 129, 0.325)",
           transition: "width 0.3s ease-in-out",
         }}
+        className="rounded-l-sm"
       ></div>
       <div className={`flex justify-between text-xs w-full`}>
         <div>{price}</div>
