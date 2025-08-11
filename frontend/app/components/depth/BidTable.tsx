@@ -60,7 +60,7 @@ function Bid({
         className="rounded-l-sm"
       ></div>
       <div className={`flex justify-between text-xs w-full`}>
-        <div>{price}</div>
+        <div className="text-green-400">{price}</div>
         <div>{quantity}</div>
         <div>{total.toFixed(2)}</div>
       </div>

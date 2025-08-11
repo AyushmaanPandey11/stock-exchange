@@ -12,7 +12,7 @@ export function Depth({ market }: { market: string }) {
   const [bids, setBids] = useState<[string, string][]>();
   const [asks, setAsks] = useState<[string, string][]>();
   const [price, setPrice] = useState<string>();
-  const [trades, setTrades] = useState<Trade[]>();
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [isSelected, setIsSelected] = useState<"Depth" | "Trades">("Depth");
 
   useEffect(() => {
@@ -113,7 +113,7 @@ export function Depth({ market }: { market: string }) {
     // Fetch latest price from trades
     getTicker(market).then((t) => setPrice(t.lastPrice));
     getTrades(market).then((t) => {
-      setTrades(t);
+      setTrades(t.slice(0, 25));
       console.log(t[0].price);
       setPrice(t[0].price);
     });
@@ -128,10 +128,14 @@ export function Depth({ market }: { market: string }) {
     WsManager.getInstance().registerCallback(
       "trade",
       (data: Trade) =>
-        setTrades((prevTrades) => {
-          if (!data) return prevTrades;
-          return prevTrades ? [data, ...prevTrades] : [data];
-        }),
+        setTimeout(() => {
+          setTrades(
+            [data]
+            // if (!data) return prevTrades;
+            // const newTrades = [data].slice(0, 15);
+            // return newTrades;
+          );
+        }, 2000),
       `trade-${market}`
     );
 

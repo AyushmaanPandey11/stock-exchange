@@ -1,13 +1,25 @@
 import type { Trade } from "@/app/utils/types";
 
 export const TradeTable = ({ trades }: { trades: Trade[] }) => {
-  console.log(trades);
-  //   const relevantTrades = trades.slice(0, 15);
+  console.log("TradeTable rendering with trades:", trades); // Debug rendering
+
   return (
     <div>
-      {trades.map(([price, quantity, time]) => (
-        <Trade key={price} price={price} quantity={quantity} time={time} />
-      ))}
+      {trades.length > 0 ? (
+        trades.map((trade) => (
+          <Trade
+            key={trade.id}
+            price={trade.price}
+            quantity={trade.quantity}
+            time={trade.timestamp}
+            isBuy={!trade.isBuyerMaker}
+          />
+        ))
+      ) : (
+        <div className="text-xs text-gray-500 text-center p-2">
+          No trades available
+        </div>
+      )}
     </div>
   );
 };
@@ -16,11 +28,24 @@ function Trade({
   price,
   quantity,
   time,
+  isBuy,
 }: {
   price: string;
   quantity: string;
   time: number;
+  isBuy: boolean;
 }) {
+  const formattedTime = time
+    ? new Date(time).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+    : "N/A";
+
+  console.log("Trade rendering:", { price, quantity, time, formattedTime }); // Debug Trade component
+
   return (
     <div
       style={{
@@ -37,10 +62,12 @@ function Trade({
           height: "100%",
         }}
       ></div>
-      <div className="flex justify-between text-xs w-full">
-        <div>{price}</div>
+      <div className="flex justify-between text-sm my-0.5 w-full">
+        <div className={`${isBuy ? "text-green-500" : "text-red-500"}`}>
+          {price}
+        </div>
         <div>{quantity}</div>
-        <div>{time?.toFixed(2)}</div>
+        <div>{formattedTime}</div>
       </div>
     </div>
   );
