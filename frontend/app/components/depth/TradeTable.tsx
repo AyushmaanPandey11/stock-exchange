@@ -1,10 +1,15 @@
 import type { Trade } from "@/app/utils/types";
 
 export const TradeTable = ({ trades }: { trades: Trade[] }) => {
-  console.log("TradeTable rendering with trades:", trades); // Debug rendering
-
   return (
-    <div>
+    <div
+      style={{
+        maxHeight: "580px", // Set a fixed height to enable scrolling
+        overflowY: "auto", // Enable vertical scrolling
+        scrollbarWidth: "none", // Hide scrollbar in Firefox
+      }}
+      className="hide-scrollbar"
+    >
       {trades.length > 0 ? (
         trades.map((trade) => (
           <Trade
@@ -43,9 +48,6 @@ function Trade({
         hour12: false,
       })
     : "N/A";
-
-  console.log("Trade rendering:", { price, quantity, time, formattedTime }); // Debug Trade component
-
   return (
     <div
       style={{

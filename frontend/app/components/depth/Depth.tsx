@@ -113,8 +113,8 @@ export function Depth({ market }: { market: string }) {
     // Fetch latest price from trades
     getTicker(market).then((t) => setPrice(t.lastPrice));
     getTrades(market).then((t) => {
+      console.log("api clg: ", t);
       setTrades(t.slice(0, 25));
-      console.log(t[0].price);
       setPrice(t[0].price);
     });
 
@@ -127,15 +127,15 @@ export function Depth({ market }: { market: string }) {
 
     WsManager.getInstance().registerCallback(
       "trade",
-      (data: Trade) =>
-        setTimeout(() => {
-          setTrades(
-            [data]
-            // if (!data) return prevTrades;
-            // const newTrades = [data].slice(0, 15);
-            // return newTrades;
-          );
-        }, 2000),
+      (data: Trade) => {
+        setTrades((prev) => {
+          if (!prev) {
+            return [data];
+          } else {
+            return [data, ...prev];
+          }
+        });
+      },
       `trade-${market}`
     );
 
@@ -158,15 +158,22 @@ export function Depth({ market }: { market: string }) {
     <div>
       <TableHeader setIsSelected={setIsSelected} isSelected={isSelected} />
       {isSelected === "Depth" ? (
-        <>
+        <div
+          style={{
+            maxHeight: "580px", // Set a fixed height to enable scrolling
+            overflowY: "auto", // Enable vertical scrolling
+            scrollbarWidth: "none", // Hide scrollbar in Firefox
+          }}
+          className="hide-scrollbar"
+        >
           {asks && <AskTable asks={asks} />}
           {price && <div>{price}</div>}
           {bids && <BidTable bids={bids} />}
-        </>
+        </div>
       ) : (
-        <>
+        <div>
           <TradeTable trades={trades} />
-        </>
+        </div>
       )}
     </div>
   );

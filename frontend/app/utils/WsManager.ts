@@ -1,4 +1,4 @@
-import { Ticker } from "./types";
+import { Ticker, Trade } from "./types";
 
 export const BASE_URL = "wss://ws.backpack.exchange/";
 // export const BASE_URL = "ws://localhost:8080";
@@ -59,6 +59,16 @@ export class WsManager {
               asks: message.data?.a || [],
             };
             callback(body);
+          } else if (stream === "trade") {
+            const { t, q, p, m, T } = message.data;
+            const newTrade: Trade = {
+              id: t,
+              isBuyerMaker: m,
+              price: p,
+              quantity: q,
+              timestamp: T,
+            };
+            callback(newTrade);
           }
         });
       }
