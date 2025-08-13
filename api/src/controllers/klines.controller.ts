@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import { pgClient } from "../db/db";
 
 export const getKlines = async (req: Request, res: Response) => {
-  const { interval, startTime, endTime } = req.query;
+  const { interval, startTime, endTime, symbol } = req.query;
+  if (symbol !== "LADDOO_INR") {
+    return res.status(404).json({ message: "only doing LADDOO_INR exchanges" });
+  }
   let query;
   switch (interval) {
     case "1m":

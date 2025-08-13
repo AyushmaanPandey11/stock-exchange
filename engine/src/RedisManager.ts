@@ -26,6 +26,6 @@ export class RedisManager {
   }
 
   public publishDbMessage(message: DbMessage) {
-    this.client.lPush("db_process", JSON.stringify(message));
+    this.client.lPush("db_processor", JSON.stringify(message));
   }
 }

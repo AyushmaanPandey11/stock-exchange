@@ -27,7 +27,7 @@ export const getTickers = async (req: Request, res: Response) => {
       priceChange: "0.00",
       priceChangePercent: "0.00",
       quoteVolume: "0.00",
-      symbol: "LADDO_INR",
+      symbol: "LADDOO_INR",
       trades: "0",
       volume: "0.00",
     };
@@ -66,9 +66,7 @@ export const getTickers = async (req: Request, res: Response) => {
       };
     }
 
-    return res.json({
-      data: ticker,
-    });
+    return res.json([ticker]);
   } catch (error) {
     console.error("Error fetching tickers:", error);
     return res.status(500).json({ error: "Internal server error" });

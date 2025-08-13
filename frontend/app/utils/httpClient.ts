@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Depth, KLine, Ticker, Trade } from "./types";
 
-const BASE_URL = "https://api.backpack.exchange/api/v1";
-// const BASE_URL = "http://localhost:5000/api/v1";
+// const BASE_URL = "https://api.backpack.exchange/api/v1";
+const BASE_URL = "http://localhost:5000/api/v1";
 
 export async function getTicker(market: string): Promise<Ticker> {
   const tickers = await getTickers();
@@ -41,6 +41,7 @@ export async function getKlines(
   return data.sort((x, y) => (Number(x.end) < Number(y.end) ? -1 : 1));
 }
 
+// required while adding multiple markets
 export async function getMarkets(): Promise<string[]> {
   const response = await axios.get(`${BASE_URL}/markets`);
   return response.data;

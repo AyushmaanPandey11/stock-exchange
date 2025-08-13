@@ -35,7 +35,7 @@ const main = async () => {
         }
         const timestamp = new Date(data.data.timestamp);
         const isBuyerMaker: boolean = data.data.isBuyerMaker;
-        const query = `INSERT INTO laddoo_price (order_id, time, price, is_buyer_maker) VALUES ($1, $2, $3, $4)`;
+        const query = `INSERT INTO laddoo_prices (order_id, time, price, is_buyer_maker) VALUES ($1, $2, $3, $4)`;
         const values = [data.data.id, timestamp, price, isBuyerMaker];
         await pgClient.query(query, values);
       } else if (data.type === "ORDER_UPDATE") {
@@ -50,7 +50,7 @@ const main = async () => {
           continue;
         }
         const orderId = data.data.orderId;
-        const query = `UPDATE laddoo_price SET price = $1 WHERE order_id = $2`; // Fixed syntax
+        const query = `UPDATE laddoo_prices SET price = $1 WHERE order_id = $2`; // Fixed syntax
         const values = [price, orderId];
         await pgClient.query(query, values);
       }

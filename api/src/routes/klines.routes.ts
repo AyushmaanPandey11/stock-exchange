@@ -3,6 +3,6 @@ import { getKlines } from "../controllers/klines.controller";
 
 const klinesRouter = Router();
 
-klinesRouter.get("/getkLines", getKlines);
+klinesRouter.get("/", getKlines);
 
 export { klinesRouter };

@@ -1,4 +1,5 @@
 import { Client } from "pg";
+import { v4 as uuidv4 } from "uuid";
 
 const pgClient = new Client({
   user: "user",
@@ -23,7 +24,7 @@ const initDB = async () => {
     await pgClient.query(`
       CREATE TABLE "laddoo_prices" (
         id BIGSERIAL NOT NULL,
-        order_id BIGINT NOT NULL,
+        order_id VARCHAR NOT NULL,
         time TIMESTAMP WITH TIME ZONE NOT NULL,
         price DOUBLE PRECISION NOT NULL,
         volume DOUBLE PRECISION NOT NULL,
@@ -36,6 +37,37 @@ const initDB = async () => {
     await pgClient.query(`
       SELECT create_hypertable('laddoo_prices', 'time', chunk_time_interval => INTERVAL '1 day');
     `);
+
+    // Insert 5 mock trades
+    console.log("Inserting 5 mock trades into laddoo_prices...");
+    const basePrice = 107; // Based on Redis price range (106–108)
+    const trades = Array.from({ length: 5 }, (_, index) => ({
+      order_id: `trade-${uuidv4()}`, // Unique order_id
+      time: new Date(Date.now() - index * 60000).toISOString(), // Stagger by 1 minute
+      price: (basePrice + (Math.random() - 0.5) * 2).toFixed(2), // Random price between 106–108
+      volume: 1.0, // Fixed volume
+      is_buyer_maker: index % 2 === 0, // Alternate true/false
+    }));
+
+    for (const trade of trades) {
+      const query = `
+        INSERT INTO laddoo_prices (order_id, time, price, volume, is_buyer_maker)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id;
+      `;
+      const values = [
+        trade.order_id,
+        trade.time,
+        parseFloat(trade.price),
+        trade.volume,
+        trade.is_buyer_maker,
+      ];
+      const result = await pgClient.query(query, values);
+      console.log(
+        `Inserted trade with ID: ${result.rows[0].id}, order_id: ${trade.order_id}`
+      );
+    }
+    console.log("Successfully inserted 5 mock trades");
 
     // Create continuous aggregate for 1-minute klines with explicit type casting
     await pgClient.query(`
