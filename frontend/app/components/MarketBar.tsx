@@ -117,14 +117,14 @@ export const MarketBar = ({ market }: { market: string }) => {
 function Ticker({ market }: { market: string }) {
   return (
     <div className="flex h-[60px] shrink-0 space-x-4">
-      <div className="flex flex-row relative ml-2 -mr-4">
+      <div className="flex flex-row relative ml-2 -mr-2">
         <Image
           alt="SOL Logo"
           loading="lazy"
           decoding="async"
           data-nimg="1"
           className="z-10 rounded-full h-6 w-6 mt-4 outline-baseBackgroundL1"
-          src="/sol.webp"
+          src="/laddoo.png"
           width={24}
           height={24}
         />
@@ -133,8 +133,8 @@ function Ticker({ market }: { market: string }) {
           loading="lazy"
           decoding="async"
           data-nimg="1"
-          className="h-6 w-6 -ml-2 mt-4 rounded-full"
-          src="/usdc.webp"
+          className="h-6 w-6 -ml-1 mt-4 rounded-full"
+          src="/inr.jpeg"
           width={24}
           height={24}
         />
@@ -143,7 +143,7 @@ function Ticker({ market }: { market: string }) {
         <div className="flex items-center justify-between flex-row cursor-pointer rounded-lg p-3 hover:opacity-80">
           <div className="flex items-center flex-row gap-2 undefined">
             <div className="flex flex-row relative">
-              <p className="font-medium text-sm undefined">
+              <p className="font-medium text-sm undefined ml-4">
                 {market.replace("_", " / ")}
               </p>
             </div>

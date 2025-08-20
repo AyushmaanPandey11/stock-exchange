@@ -17,14 +17,14 @@ export default function Page() {
             <TradeView market={market as string} />
           </div>
           <div className="w-[1px] flex-col border-slate-800 border-l"></div>
-          <div className="flex flex-col w-[300px] overflow-hidden">
+          <div className="flex flex-col w-[400px] overflow-hidden">
             <Depth market={market as string} />
           </div>
         </div>
       </div>
       <div className="w-[1px] flex-col border-slate-800 border-l"></div>
       <div>
-        <div className="flex flex-col w-[300px]">
+        <div className="flex flex-col w-[400px]">
           <SwapUI market={market as string} />
         </div>
       </div>

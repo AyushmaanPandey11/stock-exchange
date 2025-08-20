@@ -37,3 +37,19 @@ export interface Ticker {
   trades: string;
   volume: string;
 }
+
+export interface OrderResponse {
+  executedQuanty: number;
+  orderId: string;
+  fills: Fill[];
+}
+
+export interface Fill {
+  price: string;
+  quantity: number;
+  tradeId: number;
+  // id of the user who matched with order from orderbook
+  makerUserId: string;
+  // id of the order from orderbook
+  makerOrderId: string;
+}

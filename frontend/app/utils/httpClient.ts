@@ -1,8 +1,8 @@
 import axios from "axios";
-import { Depth, KLine, Ticker, Trade } from "./types";
+import { Depth, KLine, OrderResponse, Ticker, Trade } from "./types";
 
-// const BASE_URL = "https://api.backpack.exchange/api/v1";
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL = "https://api.backpack.exchange/api/v1";
+// const BASE_URL = "http://localhost:5000/api/v1";
 
 export async function getTicker(market: string): Promise<Ticker> {
   const tickers = await getTickers();
@@ -46,3 +46,20 @@ export async function getMarkets(): Promise<string[]> {
   const response = await axios.get(`${BASE_URL}/markets`);
   return response.data;
 }
+
+export const createOrder = async (
+  market: string,
+  price: number,
+  quantity: number,
+  side: "buy" | "sell",
+  userId: number
+): Promise<OrderResponse> => {
+  const response = await axios.post(`${BASE_URL}/api/v1/order/createOrder`, {
+    market,
+    price,
+    quantity,
+    side,
+    userId,
+  });
+  return response.data;
+};
