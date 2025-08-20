@@ -25,7 +25,7 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
   return (
     <div>
       <div className="flex flex-col">
-        <div className="flex flex-row h-[60px]">
+        <div className="flex flex-row h-[66px]">
           <BuyButton
             activeTab={activeTab}
             setActiveTab={() => setActiveTab("buy")}
@@ -55,7 +55,7 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
                 </div> */}
               </div>
               <div className="flex flex-col gap-2">
-                <p className="text-xs font-normal text-baseTextMedEmphasis">
+                <p className="text-lg font-normal text-baseTextMedEmphasis">
                   Price
                 </p>
                 <div className="flex flex-col relative">
@@ -84,7 +84,7 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
               </div>
             </div>
             <div className="flex flex-col gap-2 mt-4">
-              <p className="text-xs font-normal text-baseTextMedEmphasis">
+              <p className="text-lg font-normal text-baseTextMedEmphasis">
                 Quantity
               </p>
               <div className="flex flex-col relative">
@@ -178,7 +178,7 @@ const LimitButton = React.memo(
         onClick={() => setType("limit")}
       >
         <div
-          className={`text-sm font-medium py-1 border-b-2 ${
+          className={`text-lg font-medium py-1 border-b-2 ${
             type === "limit"
               ? "border-blue-50 text-bold"
               : "border-transparent hover:border-2 hover:font-bold"
@@ -206,7 +206,7 @@ const MarketButton = React.memo(
         onClick={() => setType("market")}
       >
         <div
-          className={`text-sm font-medium py-1 border-b-2 ${
+          className={`text-lg font-medium py-1 border-b-2 ${
             type === "market"
               ? "border-blue-50 font-bold"
               : "border-b-2 border-transparent hover:font-semibold hover:border-2"
@@ -230,14 +230,14 @@ const BuyButton = React.memo(
   }) => {
     return (
       <div
-        className={`flex flex-col flex-1 cursor-pointer justify-center border-b-2 p-4 ${
+        className={`flex flex-col flex-1 cursor-pointer justify-center rounded-2xl border-b-2 p-4 ${
           activeTab === "buy"
             ? "border-b-green-500 bg-green-50"
             : "border-b-gray-300 hover:border-b-gray-400"
         }`}
         onClick={() => setActiveTab("buy")}
       >
-        <p className="text-center text-sm font-semibold text-green-600">Buy</p>
+        <p className="text-center text-lg font-semibold text-green-600">Buy</p>
       </div>
     );
   }
@@ -254,14 +254,14 @@ const SellButton = React.memo(
   }) => {
     return (
       <div
-        className={`flex flex-col flex-1 cursor-pointer justify-center border-b-2 p-4 ${
+        className={`flex flex-col flex-1 cursor-pointer justify-center rounded-2xl border-b-2 p-4 ${
           activeTab === "sell"
             ? "border-b-red-300 bg-red-200"
             : "border-b-baseBorderMed hover:border-b-baseBorderFocus"
         }`}
         onClick={() => setActiveTab("sell")}
       >
-        <p className="text-center text-sm font-semibold text-red-500">Sell</p>
+        <p className="text-center text-lg font-semibold text-red-500">Sell</p>
       </div>
     );
   }

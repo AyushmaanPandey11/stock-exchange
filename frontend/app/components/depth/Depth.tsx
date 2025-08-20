@@ -160,7 +160,7 @@ export function Depth({ market }: { market: string }) {
       {isSelected === "Depth" ? (
         <div
           style={{
-            maxHeight: "580px", // Set a fixed height to enable scrolling
+            maxHeight: "660px", // Set a fixed height to enable scrolling
             overflowY: "auto", // Enable vertical scrolling
             scrollbarWidth: "none", // Hide scrollbar in Firefox
           }}
@@ -188,7 +188,7 @@ function TableHeader({
 }) {
   return (
     <div>
-      <div className="flex justify-evenly text-xs p-1">
+      <div className="flex justify-evenly text-sm p-1">
         <div
           className={`${
             isSelected === "Depth" ? "text-white" : "text-slate-500"
@@ -210,7 +210,7 @@ function TableHeader({
           Trades
         </div>
       </div>
-      <div className="flex justify-between text-xs p-0.5">
+      <div className="flex justify-between text-md p-0.5">
         <div className="text-white">Price</div>
         <div className="text-white">
           {isSelected === "Depth" ? "Size" : "Qty"}

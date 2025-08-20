@@ -4,7 +4,7 @@ export const TradeTable = ({ trades }: { trades: Trade[] }) => {
   return (
     <div
       style={{
-        maxHeight: "580px", // Set a fixed height to enable scrolling
+        maxHeight: "660px", // Set a fixed height to enable scrolling
         overflowY: "auto", // Enable vertical scrolling
         scrollbarWidth: "none", // Hide scrollbar in Firefox
       }}
@@ -64,7 +64,7 @@ function Trade({
           height: "100%",
         }}
       ></div>
-      <div className="flex justify-between text-sm my-0.5 w-full">
+      <div className="flex justify-between text-md my-0.5 w-full">
         <div className={`${isBuy ? "text-green-500" : "text-red-500"}`}>
           {price}
         </div>
