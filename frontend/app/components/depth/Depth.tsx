@@ -18,7 +18,7 @@ export function Depth({ market }: { market: string }) {
   useEffect(() => {
     WsManager.getInstance().registerCallback(
       "depth",
-      (data: { bids: string[]; asks: string[] }) => {
+      (data: { bids: [string, string][]; asks: [string, string][] }) => {
         // Update bids
         setTimeout(() => {
           setBids((originalBids) => {

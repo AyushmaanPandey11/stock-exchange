@@ -53,3 +53,14 @@ export interface Fill {
   // id of the order from orderbook
   makerOrderId: string;
 }
+
+export type WsSendMessageType = {
+  method: "SUBSCRIBE" | "UNSUBSCRIBE";
+  params: string[];
+};
+
+export type StreamData = {
+  bookTicker: Partial<Ticker>;
+  depth: { bids: [string, string][]; asks: [string, string][] };
+  trade: Trade;
+};

@@ -110,20 +110,6 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
                   </div>
                 </div>
               </div>
-              {/* <div className="flex justify-center flex-row mt-2 gap-3">
-                <div className="flex items-center justify-center flex-row rounded-full px-[16px] py-[6px] text-xs cursor-pointer bg-baseBackgroundL2 hover:bg-baseBackgroundL3">
-                  25%
-                </div>
-                <div className="flex items-center justify-center flex-row rounded-full px-[16px] py-[6px] text-xs cursor-pointer bg-baseBackgroundL2 hover:bg-baseBackgroundL3">
-                  50%
-                </div>
-                <div className="flex items-center justify-center flex-row rounded-full px-[16px] py-[6px] text-xs cursor-pointer bg-baseBackgroundL2 hover:bg-baseBackgroundL3">
-                  75%
-                </div>
-                <div className="flex items-center justify-center flex-row rounded-full px-[16px] py-[6px] text-xs cursor-pointer bg-baseBackgroundL2 hover:bg-baseBackgroundL3">
-                  Max
-                </div>
-              </div> */}
             </div>
             <button
               type="button"

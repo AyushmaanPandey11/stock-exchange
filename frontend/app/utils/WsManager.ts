@@ -1,4 +1,4 @@
-import { Ticker, Trade } from "./types";
+import { StreamData, WsSendMessageType } from "./types";
 
 export const BASE_URL = "wss://ws.backpack.exchange/";
 // export const BASE_URL = "ws://localhost:8080";
@@ -8,16 +8,26 @@ export class WsManager {
   private ws: WebSocket;
   private static instance: WsManager;
   // all the message are stored which are not sent during ws connection
-  private bufferedMessages: any[] = [];
+  private bufferedMessages: WsSendMessageType[] = [];
   private id: number;
   // callback function which will be triggered when receives onmesage from wss
-  private callbacks: { [type: string]: any[] } = {};
+  private callbacks: {
+    [K in keyof StreamData]: {
+      callback: (data: StreamData[K]) => void;
+      id: string;
+    }[];
+  };
   // to check if ws connection is established or not
   private isInitialized: boolean = false;
 
   private constructor() {
     this.ws = new WebSocket(BASE_URL);
     this.bufferedMessages = [];
+    this.callbacks = {
+      bookTicker: [],
+      depth: [],
+      trade: [],
+    };
     this.id = 1;
     this.init();
   }
@@ -40,41 +50,57 @@ export class WsManager {
     };
     this.ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
-      const stream = message.data?.e;
-      if (this.callbacks[stream]) {
-        this.callbacks[stream].forEach(({ callback }) => {
-          if (stream === "bookTicker") {
-            const newTicker: Partial<Ticker> = {
-              lastPrice: message.data.b,
-              high: message.data.h,
-              low: message.data.l,
-              volume: message.data.v,
-              quoteVolume: message.data.V,
-              symbol: message.data.s,
-            };
+      const stream = message.data?.e as keyof StreamData | undefined;
+
+      if (!stream || !this.callbacks[stream]) return;
+
+      switch (stream) {
+        case "bookTicker":
+          if (!message.data) return;
+          const newTicker: StreamData["bookTicker"] = {
+            lastPrice: message.data.b,
+            high: message.data.h,
+            low: message.data.l,
+            volume: message.data.v,
+            quoteVolume: message.data.V,
+            symbol: message.data.s,
+          };
+          this.callbacks[stream].forEach(({ callback }) => {
             callback(newTicker);
-          } else if (stream === "depth") {
-            const body = {
-              bids: message.data?.b || [],
-              asks: message.data?.a || [],
-            };
+          });
+          break;
+
+        case "depth":
+          const body: StreamData["depth"] = {
+            bids: message.data?.b || [],
+            asks: message.data?.a || [],
+          };
+          this.callbacks[stream].forEach(({ callback }) => {
             callback(body);
-          } else if (stream === "trade") {
-            const { t, q, p, m, T } = message.data;
-            const newTrade: Trade = {
-              id: t,
-              isBuyerMaker: m,
-              price: p,
-              quantity: q,
-              timestamp: T,
-            };
+          });
+          break;
+
+        case "trade":
+          if (!message.data) return;
+          const { t, q, p, m, T } = message.data;
+          const newTrade: StreamData["trade"] = {
+            id: t || "",
+            isBuyerMaker: m ?? false,
+            price: p ? p : "",
+            quantity: q ? q : "",
+            timestamp: T ?? 0,
+          };
+          this.callbacks[stream].forEach(({ callback }) => {
             callback(newTrade);
-          }
-        });
+          });
+          break;
+
+        default:
+          break;
       }
     };
   }
-  sendMessage(msg: any) {
+  sendMessage(msg: WsSendMessageType) {
     const messageBody = {
       ...msg,
       id: this.id++,
@@ -86,12 +112,16 @@ export class WsManager {
     this.ws.send(JSON.stringify(messageBody));
   }
   // adding the callbacks to the class
-  registerCallback(type: string, callback: any, id: string) {
+  registerCallback<K extends keyof StreamData>(
+    type: K,
+    callback: (data: StreamData[K]) => void,
+    id: string
+  ) {
     this.callbacks[type] = this.callbacks[type] || [];
     this.callbacks[type].push({ callback, id });
   }
   // removing hte callbacks from the class
-  deregisterCallback(type: string, id: string) {
+  deregisterCallback(type: keyof StreamData, id: string) {
     if (this.callbacks[type]) {
       const index = this.callbacks[type].findIndex((cb) => cb.id === id);
       if (index !== -1) {
