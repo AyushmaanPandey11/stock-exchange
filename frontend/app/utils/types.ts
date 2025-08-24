@@ -64,3 +64,8 @@ export type StreamData = {
   depth: { bids: [string, string][]; asks: [string, string][] };
   trade: Trade;
 };
+
+export interface DepthPrice {
+  price: string;
+  isBuyerMaker: boolean;
+}

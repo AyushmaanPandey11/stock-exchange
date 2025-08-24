@@ -41,7 +41,11 @@ export class Orderbook {
     this.lastTradeId = lastTradeId;
   }
 
-  addOrder(order: Order): { executedQuantity: number; fills: Fill[] } {
+  addOrder(order: Order): {
+    executedQuantity: number;
+    fills: Fill[];
+    message: string;
+  } {
     if (order.side == "buy") {
       // match orders in the sell asks table
       const { executedQuantity, fills } = this.matchAskForBid(order);
@@ -49,6 +53,7 @@ export class Orderbook {
         return {
           executedQuantity,
           fills,
+          message: "Order Matched",
         };
       }
 
@@ -64,6 +69,7 @@ export class Orderbook {
       return {
         executedQuantity,
         fills,
+        message: "Order added to Orderbook",
       };
     } else {
       const { executedQuantity, fills } = this.matchBidsForAsk(order);
@@ -71,6 +77,7 @@ export class Orderbook {
         return {
           executedQuantity,
           fills,
+          message: "Order Matched",
         };
       }
 
@@ -87,11 +94,24 @@ export class Orderbook {
       return {
         executedQuantity,
         fills,
+        message: "Order added to Orderbook",
       };
     }
   }
 
   matchAskForBid(order: Order): { fills: Fill[]; executedQuantity: number } {
+    const hasValidMatch = this.asks.some(
+      (ask) =>
+        ask.price <= order.price &&
+        ask.quantity > ask.filled &&
+        ask.userId !== order.userId
+    );
+
+    // If no valid matches (all would be self-trades), return empty result
+    if (!hasValidMatch) {
+      return { fills: [], executedQuantity: 0 };
+    }
+
     const fills: Fill[] = [];
     let executedQuantity: number = 0;
 
@@ -134,6 +154,18 @@ export class Orderbook {
   }
 
   matchBidsForAsk(order: Order): { executedQuantity: number; fills: Fill[] } {
+    const hasValidMatch = this.bids.some(
+      (bid) =>
+        bid.price >= order.price &&
+        bid.quantity > bid.filled &&
+        bid.userId !== order.userId
+    );
+
+    // If no valid matches (all would be self-trades), return empty result
+    if (!hasValidMatch) {
+      return { executedQuantity: 0, fills: [] };
+    }
+
     const fills: Fill[] = [];
     let executedQuantity = 0;
 
@@ -211,9 +243,14 @@ export class Orderbook {
     for (const price in bidsObj) {
       bids.push([price, bidsObj[price].toString()]);
     }
+
+    bids.sort((a, b) => Number(b[0]) - Number(a[0]));
+
     for (const price in asksObj) {
       asks.push([price, asksObj[price].toString()]);
     }
+
+    asks.sort((a, b) => Number(a[0]) - Number(b[0]));
 
     return { bids, asks };
   }

@@ -47,13 +47,8 @@ export class Engine {
       case CREATE_ORDER:
         try {
           const { market, price, quantity, side, userId } = message.data;
-          const { orderId, executedQuantity, fills } = this.createOrder(
-            market,
-            quantity,
-            price,
-            side,
-            userId
-          );
+          const { orderId, executedQuantity, fills, ResMessage } =
+            this.createOrder(market, quantity, price, side, userId);
           //publishing to the redis pubsub to which api server is subscribed for this clientId
           RedisManager.getInstance().sendToApi(clientId, {
             type: "ORDER_PLACED",
@@ -61,6 +56,7 @@ export class Engine {
               orderId,
               executedQuantity,
               fills,
+              ResMessage,
             },
           });
         } catch (e) {
@@ -275,8 +271,7 @@ export class Engine {
         Math.random().toString(36).substring(2, 15),
     };
     // add this order to the orderbook
-    const { executedQuantity, fills } = orderbook.addOrder(order);
-
+    const { executedQuantity, fills, message } = orderbook.addOrder(order);
     // after completing the order, update the user's balances
     this.updateUserBalance(userId, fills, baseAsset, quoteAsset, side);
     // publishing to ws the updated depth only for this order price
@@ -292,6 +287,7 @@ export class Engine {
       executedQuantity,
       fills,
       orderId: order.orderId,
+      ResMessage: message,
     };
   }
 
@@ -311,8 +307,8 @@ export class Engine {
         fills.map((f) => f.price).includes(x[0])
       );
       const updatedBids = depth.bids.filter((x) => x[0] === price);
-      RedisManager.getInstance().publishWsMessage(`depth-${market}`, {
-        stream: `depth-${market}`,
+      RedisManager.getInstance().publishWsMessage(`depth.${market}`, {
+        stream: `depth.${market}`,
         data: {
           a: updatedAsks,
           b: updatedBids.length ? updatedBids : [],
@@ -324,8 +320,8 @@ export class Engine {
       const updateBids = depth.bids.filter((x) =>
         fills.map((f) => f.price).includes(x[0])
       );
-      RedisManager.getInstance().publishWsMessage(`depth-${market}`, {
-        stream: `depth-${market}`,
+      RedisManager.getInstance().publishWsMessage(`depth.${market}`, {
+        stream: `depth.${market}`,
         data: {
           a: updatedAsks.length ? updatedAsks : [],
           b: updateBids,
@@ -337,8 +333,8 @@ export class Engine {
 
   publishRecentTradesToWs(fills: Fill[], market: string, side: "buy" | "sell") {
     fills.forEach((fill) => {
-      RedisManager.getInstance().publishWsMessage(`trade-${market}`, {
-        stream: `trade-${market}`,
+      RedisManager.getInstance().publishWsMessage(`trade.${market}`, {
+        stream: `trade.${market}`,
         data: {
           e: "trade",
           t: fill.tradeId,
@@ -346,6 +342,7 @@ export class Engine {
           q: fill.quantity.toString(),
           s: market,
           m: side === "sell",
+          T: Date.now(),
         },
       });
     });
@@ -362,12 +359,11 @@ export class Engine {
     const updatedBids = depth.bids.filter((x) => x[0] === price);
     const updatedAsks = depth.asks.filter((x) => x[0] === price);
 
-    RedisManager.getInstance().publishWsMessage(`depth-${market}`, {
-      stream: `depth-${market}`,
+    RedisManager.getInstance().publishWsMessage(`depth.${market}`, {
+      stream: `depth.${market}`,
       data: {
         a: updatedAsks.length ? updatedAsks : [[price, "0"]],
         b: updatedBids.length ? updatedBids : [[price, "0"]],
-        s: market,
         e: "depth",
       },
     });
@@ -440,9 +436,7 @@ export class Engine {
           Number(fill.price) * fill.quantity;
 
         // maker will be sellig the baseAsset meaning baseAsset lock amount will be deducted and quoteAsset available amount will be incremeneted
-        const makerBalance = this.balances.get(
-          fill.makerOrderId
-        ) as UserBalance;
+        const makerBalance = this.balances.get(fill.makerUserId) as UserBalance;
         // quoteAsset
         makerBalance[quoteAsset].available =
           makerBalance[quoteAsset].available +
@@ -465,9 +459,7 @@ export class Engine {
           takerBalance[baseAsset].locked - Number(fill.price) * fill.quantity;
 
         // udpating maker balance
-        const makerBalance = this.balances.get(
-          fill.makerOrderId
-        ) as UserBalance;
+        const makerBalance = this.balances.get(fill.makerUserId) as UserBalance;
         // quoteAsset, will be deducted in locked
         makerBalance[quoteAsset].locked =
           makerBalance[quoteAsset].locked - Number(fill.price) * fill.quantity;

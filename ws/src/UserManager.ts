@@ -28,6 +28,7 @@ export class UserManager {
     const id = this.getRandomId();
     const newUser = new User(id, ws);
     this.users.set(id, newUser);
+    console.log(`user of id - ${id} is connected`);
     this.deregisterUserOnClose(id, ws);
     return newUser;
   }

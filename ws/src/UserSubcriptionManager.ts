@@ -21,15 +21,6 @@ export class UserSubscriptionManager {
     return this.instance;
   }
 
-  private redisCallbackForIncomingMsgs(message: string, channel: string) {
-    const parsedMessage = JSON.parse(message);
-    this.subscriptionToUsers
-      .get(channel)
-      ?.forEach((user) =>
-        UserManager.getInstance().getUser(user)?.streamMsgsToUser(parsedMessage)
-      );
-  }
-
   public subscribe(userId: string, subscription: string) {
     if (this.userSubscriptions.get(userId)?.includes(subscription)) {
       return;
@@ -45,9 +36,19 @@ export class UserSubscriptionManager {
     if (this.subscriptionToUsers.get(subscription)?.length === 1) {
       this.redisClient.subscribe(
         subscription,
-        this.redisCallbackForIncomingMsgs
+        this.redisCallbackForIncomingMsgs.bind(this)
       );
     }
+  }
+
+  private redisCallbackForIncomingMsgs(message: string, channel: string) {
+    console.log(`channel is ${channel}, incoming msg from engine: ${message}`);
+    const parsedMessage = JSON.parse(message);
+    this.subscriptionToUsers
+      .get(channel)
+      ?.forEach((user) =>
+        UserManager.getInstance().getUser(user)?.streamMsgsToUser(parsedMessage)
+      );
   }
 
   public unsubscribe(userId: string, subscription: string) {

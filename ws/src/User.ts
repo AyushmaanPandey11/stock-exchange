@@ -30,14 +30,16 @@ export class User {
     this.ws.on("message", (message: string) => {
       const parsedMessage: IncomingMessages = JSON.parse(message);
       if (parsedMessage.method === "SUBSCRIBE") {
-        parsedMessage.params.forEach((param) =>
-          UserSubscriptionManager.getInstance().subscribe(this.id, param)
-        );
+        parsedMessage.params.forEach((param) => {
+          UserSubscriptionManager.getInstance().subscribe(this.id, param);
+          console.log(`user subscibed for events of - ${param}`);
+        });
       }
       if (parsedMessage.method === "UNSUBSCRIBE") {
-        parsedMessage.params.forEach((param) =>
-          UserSubscriptionManager.getInstance().unsubscribe(this.id, param)
-        );
+        parsedMessage.params.forEach((param) => {
+          UserSubscriptionManager.getInstance().unsubscribe(this.id, param);
+          console.log(`user unsubscibed for events of - ${param}`);
+        });
       }
     });
   }

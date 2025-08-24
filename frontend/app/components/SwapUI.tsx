@@ -16,7 +16,13 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
   const handleOrder = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      const response = createOrder(market, price, Number(amount), activeTab, 1);
+      const response = createOrder(
+        market,
+        price,
+        Number(amount),
+        activeTab,
+        "1"
+      );
       console.log(response);
     },
     [market, activeTab, amount, price]

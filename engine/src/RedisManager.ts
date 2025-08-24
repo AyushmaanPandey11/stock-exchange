@@ -1,5 +1,6 @@
 import { createClient, RedisClientType } from "redis";
 import { DbMessage } from "./types/db";
+import { WsMessage } from "./types/toWs";
 
 export class RedisManager {
   private client: RedisClientType;
@@ -21,8 +22,8 @@ export class RedisManager {
     this.client.publish(clientId, JSON.stringify(message));
   }
 
-  public publishWsMessage(clientId: string, message: any) {
-    this.client.publish(clientId, JSON.stringify(message));
+  public publishWsMessage(channel: string, message: WsMessage) {
+    this.client.publish(channel, JSON.stringify(message));
   }
 
   public publishDbMessage(message: DbMessage) {

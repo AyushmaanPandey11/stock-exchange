@@ -1,17 +1,17 @@
 "use client";
 
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { getDepth, getTicker, getTrades } from "../../utils/httpClient";
+import { getDepth, getTrades } from "../../utils/httpClient";
 import { BidTable } from "./BidTable";
 import { AskTable } from "./AskTable";
 import { WsManager } from "@/app/utils/WsManager";
-import { Ticker, Trade } from "@/app/utils/types";
+import { DepthPrice, Trade } from "@/app/utils/types";
 import { TradeTable } from "./TradeTable";
 
 export function Depth({ market }: { market: string }) {
   const [bids, setBids] = useState<[string, string][]>();
   const [asks, setAsks] = useState<[string, string][]>();
-  const [price, setPrice] = useState<string>();
+  const [price, setPrice] = useState<DepthPrice | undefined>();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isSelected, setIsSelected] = useState<"Depth" | "Trades">("Depth");
 
@@ -106,24 +106,19 @@ export function Depth({ market }: { market: string }) {
     });
 
     getDepth(market).then((d) => {
-      setBids(d.bids.reverse());
+      setBids(d.bids);
       setAsks(d.asks);
     });
 
     // Fetch latest price from trades
-    getTicker(market).then((t) => setPrice(t.lastPrice));
     getTrades(market).then((t) => {
-      console.log("api clg: ", t);
+      // console.log("api clg: ", t);
       setTrades(t.slice(0, 25));
-      setPrice(t[0].price);
+      setPrice({
+        price: t[0].price,
+        isBuyerMaker: t[0].isBuyerMaker,
+      });
     });
-
-    WsManager.getInstance().registerCallback(
-      "bookTicker",
-      (data: Partial<Ticker>) =>
-        setPrice((prevTicker) => data?.lastPrice ?? prevTicker ?? ""),
-      `bookTicker-${market}`
-    );
 
     WsManager.getInstance().registerCallback(
       "trade",
@@ -134,6 +129,10 @@ export function Depth({ market }: { market: string }) {
           } else {
             return [data, ...prev];
           }
+        });
+        setPrice({
+          price: data.price,
+          isBuyerMaker: data.isBuyerMaker,
         });
       },
       `trade-${market}`
@@ -146,10 +145,6 @@ export function Depth({ market }: { market: string }) {
         params: [`depth.${market}`],
       });
       WsManager.getInstance().deregisterCallback("depth", `DEPTH-${market}`);
-      WsManager.getInstance().deregisterCallback(
-        "bookTicker",
-        `bookTicker-${market}`
-      );
       WsManager.getInstance().deregisterCallback("trade", `trade-${market}`);
     };
   }, [market]);
@@ -167,7 +162,15 @@ export function Depth({ market }: { market: string }) {
           className="hide-scrollbar"
         >
           {asks && <AskTable asks={asks} />}
-          {price && <div>{price}</div>}
+          {price && (
+            <div
+              className={`text-xl ${
+                price.isBuyerMaker === true ? "text-red-600" : "text-green-600"
+              }`}
+            >
+              {price.price}
+            </div>
+          )}
           {bids && <BidTable bids={bids} />}
         </div>
       ) : (
