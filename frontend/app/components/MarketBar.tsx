@@ -1,50 +1,40 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import type { Ticker } from "../utils/types";
+import type { Ticker, Trade } from "../utils/types";
 import { getTicker } from "../utils/httpClient";
 import { WsManager } from "../utils/WsManager";
 
-export const MarketBar = ({ market }: { market: string }) => {
+export const MarketBar = React.memo(({ market }: { market: string }) => {
   const [ticker, setTicker] = useState<Ticker | null>(null);
 
   useEffect(() => {
     getTicker(market).then((t) => setTicker(t));
     // using ws instance to get the ticker data.
     WsManager.getInstance().registerCallback(
-      "bookTicker",
-      (data: Partial<Ticker>) =>
-        setTicker((prevTicker) => ({
-          firstPrice: data?.firstPrice ?? prevTicker?.firstPrice ?? "",
-          high: data?.high ?? prevTicker?.high ?? "",
-          lastPrice: data?.lastPrice ?? prevTicker?.lastPrice ?? "",
-          low: data?.low ?? prevTicker?.low ?? "",
-          priceChange: data?.priceChange ?? prevTicker?.priceChange ?? "",
-          priceChangePercent:
-            data?.priceChangePercent ?? prevTicker?.priceChangePercent ?? "",
-          quoteVolume: data?.quoteVolume ?? prevTicker?.quoteVolume ?? "",
-          symbol: data?.symbol ?? prevTicker?.symbol ?? "",
-          trades: data?.trades ?? prevTicker?.trades ?? "",
-          volume: data?.volume ?? prevTicker?.volume ?? "",
-        })),
-      `bookTicker-${market}`
+      "trade",
+      (data: Trade) => {
+        setTicker((prev) => ({
+          ...prev,
+          lastPrice: data.price,
+          isBuyerMaker: data.isBuyerMaker,
+        }));
+      },
+      `trade-${market}`
     );
     // subscribing to the ws for the ticker data
     WsManager.getInstance().sendMessage({
       method: "SUBSCRIBE",
-      params: [`bookTicker.${market}`],
+      params: [`trade.${market}`],
     });
 
     // during unmounting
     return () => {
-      WsManager.getInstance().deregisterCallback(
-        "bookTicker",
-        `bookTicker-${market}`
-      );
       WsManager.getInstance().sendMessage({
         method: "UNSUBSCRIBE",
-        params: [`bookTicker.${market}`],
+        params: [`trade.${market}`],
       });
+      WsManager.getInstance().deregisterCallback("trade", `trade-${market}`);
     };
   }, [market]);
 
@@ -56,7 +46,9 @@ export const MarketBar = ({ market }: { market: string }) => {
           <div className="flex items-center flex-row space-x-8 pl-4">
             <div className="flex flex-col h-full justify-center">
               <p
-                className={`font-medium tabular-nums text-greenText text-2xl text-green-500`}
+                className={`${
+                  ticker?.isBuyerMaker ? "text-red-600" : "text-green-600"
+                } font-medium tabular-nums text-greenText text-2xl text-green-500`}
               >
                 ${ticker?.lastPrice}
               </p>
@@ -112,9 +104,10 @@ export const MarketBar = ({ market }: { market: string }) => {
       </div>
     </div>
   );
-};
+});
+MarketBar.displayName = "MarketBar";
 
-function Ticker({ market }: { market: string }) {
+const Ticker = React.memo(({ market }: { market: string }) => {
   return (
     <div className="flex h-[65px] shrink-0 space-x-4">
       <div className="flex flex-row relative ml-2 -mr-2">
@@ -152,4 +145,6 @@ function Ticker({ market }: { market: string }) {
       </button>
     </div>
   );
-}
+});
+
+Ticker.displayName = "Ticker";

@@ -62,7 +62,7 @@ function Ask({
         }}
         className="rounded-l-sm"
       ></div>
-      <div className="flex justify-between text-md w-full p-0.5">
+      <div className="flex justify-between text-lg w-full p-0.5">
         <div className="text-red-600">{price}</div>
         <div>{quantity}</div>
         <div>{total?.toFixed(2)}</div>

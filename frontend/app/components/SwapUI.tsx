@@ -11,7 +11,7 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
 
   useEffect(() => {
     getTicker(market).then((t) => setPrice(Number(t.lastPrice)));
-  });
+  }, [market]);
 
   const handleOrder = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {

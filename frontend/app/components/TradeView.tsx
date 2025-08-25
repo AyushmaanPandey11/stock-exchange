@@ -5,7 +5,7 @@ import { ChartManager } from "../utils/chartManager";
 
 export function TradeView({ market }: { market: string }) {
   const chartRef = useRef<HTMLDivElement>(null);
-  const chartManagerRef = useRef<ChartManager>(null);
+  const chartManagerRef = useRef<ChartManager | null>(null);
 
   const init = useCallback(async () => {
     let klineData: KLine[] = [];
@@ -20,7 +20,7 @@ export function TradeView({ market }: { market: string }) {
       console.error("error: ", e);
     }
 
-    if (chartRef) {
+    if (chartRef && chartRef.current) {
       if (chartManagerRef.current) {
         chartManagerRef.current.destroy();
       }

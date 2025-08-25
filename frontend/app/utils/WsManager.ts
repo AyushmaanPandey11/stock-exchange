@@ -1,7 +1,7 @@
 import { StreamData, WsSendMessageType } from "./types";
 
-// export const BASE_URL = "wss://ws.backpack.exchange/";
-export const BASE_URL = "ws://localhost:8080";
+export const BASE_URL = "wss://ws.backpack.exchange/";
+// export const BASE_URL = "ws://localhost:8080";
 
 //Singleton concept of creating one instance of the class and using it all over the project
 export class WsManager {

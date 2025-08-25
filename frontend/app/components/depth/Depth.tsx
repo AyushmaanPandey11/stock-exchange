@@ -1,6 +1,13 @@
 "use client";
 
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { getDepth, getTrades } from "../../utils/httpClient";
 import { BidTable } from "./BidTable";
 import { AskTable } from "./AskTable";
@@ -14,6 +21,13 @@ export function Depth({ market }: { market: string }) {
   const [price, setPrice] = useState<DepthPrice | undefined>();
   const [trades, setTrades] = useState<Trade[]>([]);
   const [isSelected, setIsSelected] = useState<"Depth" | "Trades">("Depth");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleRecenter = useCallback(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
 
   useEffect(() => {
     WsManager.getInstance().registerCallback(
@@ -144,6 +158,10 @@ export function Depth({ market }: { market: string }) {
         method: "UNSUBSCRIBE",
         params: [`depth.${market}`],
       });
+      WsManager.getInstance().sendMessage({
+        method: "UNSUBSCRIBE",
+        params: [`trade.${market}`],
+      });
       WsManager.getInstance().deregisterCallback("depth", `DEPTH-${market}`);
       WsManager.getInstance().deregisterCallback("trade", `trade-${market}`);
     };
@@ -154,6 +172,7 @@ export function Depth({ market }: { market: string }) {
       <TableHeader setIsSelected={setIsSelected} isSelected={isSelected} />
       {isSelected === "Depth" ? (
         <div
+          ref={scrollContainerRef}
           style={{
             maxHeight: "660px", // Set a fixed height to enable scrolling
             overflowY: "auto", // Enable vertical scrolling
@@ -163,12 +182,22 @@ export function Depth({ market }: { market: string }) {
         >
           {asks && <AskTable asks={asks} />}
           {price && (
-            <div
-              className={`text-xl ${
-                price.isBuyerMaker === true ? "text-red-600" : "text-green-600"
-              }`}
-            >
-              {price.price}
+            <div className={`flex flex-row justify-between`}>
+              <p
+                className={`text-2xl ${
+                  price.isBuyerMaker === true
+                    ? "text-red-600"
+                    : "text-green-600"
+                }`}
+              >
+                {price.price}
+              </p>
+              <button
+                className="cursor-pointer hover:text-green-600 text-green-400 text-md"
+                onClick={() => handleRecenter()}
+              >
+                Recenter
+              </button>
             </div>
           )}
           {bids && <BidTable bids={bids} />}
@@ -182,46 +211,49 @@ export function Depth({ market }: { market: string }) {
   );
 }
 
-function TableHeader({
-  setIsSelected,
-  isSelected,
-}: {
-  setIsSelected: Dispatch<SetStateAction<"Depth" | "Trades">>;
-  isSelected: "Depth" | "Trades";
-}) {
-  return (
-    <div>
-      <div className="flex justify-evenly text-sm p-1">
-        <div
-          className={`${
-            isSelected === "Depth" ? "text-white" : "text-slate-500"
-          } hover:cursor-pointer`}
-          onClick={() => {
-            setIsSelected("Depth");
-          }}
-        >
-          Depth
+const TableHeader = React.memo(
+  ({
+    setIsSelected,
+    isSelected,
+  }: {
+    setIsSelected: Dispatch<SetStateAction<"Depth" | "Trades">>;
+    isSelected: "Depth" | "Trades";
+  }) => {
+    return (
+      <div>
+        <div className="flex justify-evenly text-sm p-1">
+          <div
+            className={`${
+              isSelected === "Depth" ? "text-white" : "text-slate-500"
+            } hover:cursor-pointer`}
+            onClick={() => {
+              setIsSelected("Depth");
+            }}
+          >
+            Depth
+          </div>
+          <div
+            className={`${
+              isSelected === "Trades" ? "text-white" : "text-slate-500"
+            } hover:cursor-pointer`}
+            onClick={() => {
+              setIsSelected("Trades");
+            }}
+          >
+            Trades
+          </div>
         </div>
-        <div
-          className={`${
-            isSelected === "Trades" ? "text-white" : "text-slate-500"
-          } hover:cursor-pointer`}
-          onClick={() => {
-            setIsSelected("Trades");
-          }}
-        >
-          Trades
+        <div className="flex justify-between text-md p-0.5">
+          <div className="text-white">Price</div>
+          <div className="text-white">
+            {isSelected === "Depth" ? "Size" : "Qty"}
+          </div>
+          <div className="text-white">
+            {isSelected === "Depth" ? "Total" : "Time"}
+          </div>
         </div>
       </div>
-      <div className="flex justify-between text-md p-0.5">
-        <div className="text-white">Price</div>
-        <div className="text-white">
-          {isSelected === "Depth" ? "Size" : "Qty"}
-        </div>
-        <div className="text-white">
-          {isSelected === "Depth" ? "Total" : "Time"}
-        </div>
-      </div>
-    </div>
-  );
-}
+    );
+  }
+);
+TableHeader.displayName = "TableHeader";

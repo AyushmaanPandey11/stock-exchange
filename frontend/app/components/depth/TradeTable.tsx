@@ -64,7 +64,7 @@ function Trade({
           height: "100%",
         }}
       ></div>
-      <div className="flex justify-between text-md my-0.5 w-full">
+      <div className="flex justify-between text-lg my-0.5 w-full">
         <div className={`${isBuy ? "text-green-500" : "text-red-500"}`}>
           {price}
         </div>

@@ -1,8 +1,8 @@
 import axios from "axios";
 import { Depth, KLine, OrderResponse, Ticker, Trade } from "./types";
 
-// const BASE_URL = "https://api.backpack.exchange/api/v1";
-const BASE_URL = "http://localhost:5000/api/v1";
+const BASE_URL = "https://api.backpack.exchange/api/v1";
+// const BASE_URL = "http://localhost:5000/api/v1";
 
 export async function getTicker(market: string): Promise<Ticker> {
   const tickers = await getTickers();
@@ -36,7 +36,6 @@ export async function getKlines(
   const response = await axios.get(
     `${BASE_URL}/klines?symbol=${market}&interval=${interval}&startTime=${startTime}&endTime=${endTime}`
   );
-  console.log("respone klines: ", response.data);
   const data: KLine[] = response.data;
   return data.sort((x, y) => (Number(x.end) < Number(y.end) ? -1 : 1));
 }
