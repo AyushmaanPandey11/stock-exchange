@@ -15,11 +15,9 @@ export interface Order {
   side: "buy" | "sell";
 }
 
-// here the idea to first remove/delete the orders from the orderbooks where the bids of price are above PRICE
-// and delete the sell order which are below the PRICE, to prevent them from matching..
-// at the end the orderbook will be around the Price where asks will be above the price value and bids will less than price value
 async function main() {
-  const price = 100 + Math.random() * 10;
+  // Modified to generate price between 95 and 115
+  const price = 95 + Math.random() * 20; // Ensures price is between 95 and 115
   const openOrder = await axios.get(
     `${BASE_URL}/api/v1/order/openOrders?userId=${userId}&market=${Market}`
   );
@@ -43,7 +41,10 @@ async function main() {
     if (BidsToAdd > 0) {
       await axios.post(`${BASE_URL}/api/v1/order/createOrder`, {
         market: Market,
-        price: (price - Math.random() * 1).toFixed(1).toString(),
+        // Ensure bid price is below 'price' but within 95–115
+        price: Math.max(95, price - Math.random() * 20)
+          .toFixed(1)
+          .toString(),
         quantity: "1",
         side: "buy",
         userId: userId,
@@ -53,7 +54,10 @@ async function main() {
     if (AsksToAdd > 0) {
       await axios.post(`${BASE_URL}/api/v1/order/createOrder`, {
         market: Market,
-        price: (price + Math.random() * 1).toFixed(1).toString(),
+        // Ensure ask price is above 'price' but within 95–115
+        price: Math.min(115, price + Math.random() * (115 - price))
+          .toFixed(1)
+          .toString(),
         quantity: "1",
         side: "sell",
         userId: userId,
@@ -75,6 +79,7 @@ const CancelBidOrdersMoreThanThePrice = async (
           data: {
             userId: userId,
             market: Market,
+            orderId: o.orderId,
           },
         })
       );
@@ -96,6 +101,7 @@ const CancelAskOrdersLessThanThePrice = async (
           data: {
             userId: userId,
             market: Market,
+            orderId: o.orderId,
           },
         })
       );
@@ -107,5 +113,5 @@ const CancelAskOrdersLessThanThePrice = async (
 };
 
 main().then(() => {
-  console.log(`orders addeds to engine`);
+  console.log(`orders added to engine`);
 });

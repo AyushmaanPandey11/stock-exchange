@@ -1,5 +1,4 @@
 import { Client } from "pg";
-import { v4 as uuidv4 } from "uuid";
 
 const pgClient = new Client({
   user: "user",
@@ -38,16 +37,23 @@ const initDB = async () => {
       SELECT create_hypertable('laddoo_prices', 'time', chunk_time_interval => INTERVAL '1 day');
     `);
 
-    // Insert 5 mock trades
-    console.log("Inserting 5 mock trades into laddoo_prices...");
-    const basePrice = 107; // Based on Redis price range (106–108)
-    const trades = Array.from({ length: 5 }, (_, index) => ({
-      order_id: `trade-${uuidv4()}`, // Unique order_id
-      time: new Date(Date.now() - index * 60000).toISOString(), // Stagger by 1 minute
-      price: (basePrice + (Math.random() - 0.5) * 2).toFixed(2), // Random price between 106–108
-      volume: 1.0, // Fixed volume
-      is_buyer_maker: index % 2 === 0, // Alternate true/false
-    }));
+    console.log("Inserting 10 mock trades into laddoo_prices...");
+    const basePrice = 105;
+    const trades = Array.from({ length: 10 }, (_, index) => {
+      const trend = index < 5 ? -1 * (index * 0.5) : (index - 5) * 0.5;
+      const fluctuation = (Math.random() - 0.5) * 5;
+      const price = (basePrice + trend + fluctuation).toFixed(2);
+      return {
+        order_id: `${
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15)
+        }`,
+        time: new Date(Date.now() - (9 - index) * 60000).toISOString(),
+        price: Math.max(95, Math.min(115, parseFloat(price))).toFixed(2),
+        volume: 1.0,
+        is_buyer_maker: index % 2 === 0,
+      };
+    });
 
     for (const trade of trades) {
       const query = `

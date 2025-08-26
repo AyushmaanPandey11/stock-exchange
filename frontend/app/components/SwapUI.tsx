@@ -18,8 +18,8 @@ export const SwapUI = React.memo(({ market }: { market: string }) => {
       e.preventDefault();
       const response = createOrder(
         market,
-        price,
-        Number(amount),
+        price.toString(),
+        amount,
         activeTab,
         "1"
       );

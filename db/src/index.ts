@@ -29,29 +29,15 @@ const main = async () => {
       if (data.type === "TRADE_ADDED") {
         console.log(`trade being added ${JSON.stringify(data)}`);
         const price = parseFloat(data.data.price);
+        const volume = parseFloat(data.data.quantity);
         if (isNaN(price)) {
           console.error(`Invalid price for trade ${data.data.id}`);
           continue;
         }
         const timestamp = new Date(data.data.timestamp);
         const isBuyerMaker: boolean = data.data.isBuyerMaker;
-        const query = `INSERT INTO laddoo_prices (order_id, time, price, is_buyer_maker) VALUES ($1, $2, $3, $4)`;
-        const values = [data.data.id, timestamp, price, isBuyerMaker];
-        await pgClient.query(query, values);
-      } else if (data.type === "ORDER_UPDATE") {
-        console.log(`trade being updated ${JSON.stringify(data)}`);
-        if (!data.data.price) {
-          console.error(`Price missing for order update ${data.data.orderId}`);
-          continue;
-        }
-        const price = parseFloat(data.data.price);
-        if (isNaN(price)) {
-          console.error(`Invalid price for order ${data.data.orderId}`);
-          continue;
-        }
-        const orderId = data.data.orderId;
-        const query = `UPDATE laddoo_prices SET price = $1 WHERE order_id = $2`; // Fixed syntax
-        const values = [price, orderId];
+        const query = `INSERT INTO laddoo_prices(order_id, time, price, volume,is_buyer_maker) VALUES ($1, $2, $3, $4, $5)`;
+        const values = [data.data.id, timestamp, price, volume, isBuyerMaker];
         await pgClient.query(query, values);
       }
     } catch (error) {
