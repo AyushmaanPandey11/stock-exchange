@@ -46,6 +46,23 @@ export class Orderbook {
     fills: Fill[];
     message: string;
   } {
+    // preventing user to make same price order in opposite side
+    const oppositeSide = order.side === "buy" ? "sell" : "buy";
+    const oppositeOrders = order.side === "buy" ? this.asks : this.bids;
+    const hasMatchingOrder = oppositeOrders.some((existingOrder) => {
+      existingOrder.userId === order.userId &&
+        existingOrder.price === order.price &&
+        existingOrder.side === oppositeSide;
+    });
+
+    if (hasMatchingOrder) {
+      return {
+        executedQuantity: 0,
+        fills: [],
+        message: `You already placed an order of same price in ${oppositeSide}`,
+      };
+    }
+
     if (order.side == "buy") {
       // match orders in the sell asks table
       const { executedQuantity, fills } = this.matchAskForBid(order);

@@ -219,13 +219,11 @@ export class Engine {
     const orderbook = this.orderBooks.find(
       (order) => order.getMarket() === market
     );
-    const baseAsset = market.split("_")[0];
-    const quoteAsset = market.split("_")[1];
-
     if (!orderbook) {
       throw new Error("No Orderbook found");
     }
 
+    const [baseAsset, quoteAsset] = market.split("_");
     // lock funds before making an order
     this.lockAndValidateFunds(
       baseAsset,
